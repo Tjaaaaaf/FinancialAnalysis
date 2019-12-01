@@ -1,0 +1,289 @@
+
+  //BALANS NA WINSTVERDELING
+    
+    //ACTIVA
+    //OPRICHTINGSKOSTEN
+    SimpleStringProperty getBAOprichtingskostenProperty();
+    
+    //VASTE ACTIVA
+    SimpleStringProperty getBAVasteActivaProperty();
+
+    //IMMATERIËLE ACTIVA
+    SimpleStringProperty getBAImmaterieleVasteActivaProperty();
+
+    //MATERIËLE ACTIVA
+    SimpleStringProperty getBAMaterieleVasteActivaProperty();
+
+    SimpleStringProperty getBATerreinenGebouwenProperty();
+
+    SimpleStringProperty getBAInstallatiesMachinesUitrustingProperty();
+
+    SimpleStringProperty getBAMeubilairRollendMaterieelProperty();
+
+    SimpleStringProperty getBALeasingSoortgelijkeRechtenProperty();
+
+    SimpleStringProperty getBAOverigeMaterieleVasteActivaProperty();
+
+    SimpleStringProperty getBAActivaAanbouwVooruitbetalingenProperty();
+
+    //FINANCIËLE ACTIVA
+    SimpleStringProperty getBAFinancieleVasteActivaProperty();
+            
+    SimpleStringProperty getBAVerbondenOndernemingenProperty();
+
+    SimpleStringProperty getBAVerbondenOndernemingenDeelnemingenProperty();
+
+    SimpleStringProperty getBAVerbondenOndernemingenVorderingenProperty();
+
+    SimpleStringProperty getBAOndernemingenDeelnemingsverhoudingProperty();
+
+    SimpleStringProperty getBAOndernemingenDeelnemingsverhoudingDeelnemingenProperty();
+
+    SimpleStringProperty getBAOndernemingenDeelnemingsverhoudingVorderingenProperty();
+
+    SimpleStringProperty getBAAndereFinancieleVasteActivaProperty();
+
+    SimpleStringProperty getBAAndereFinancieleVasteActivaAandelenProperty();
+
+    SimpleStringProperty getBAAndereFinancieleVasteActivaVorderingenBorgtochtenContantenProperty();
+
+    //VLOTTENDE ACTIVA
+    SimpleStringProperty getBAVlottendeActivaProperty();
+
+    SimpleStringProperty getBAVorderingenMeer1JaarProperty();
+
+    SimpleStringProperty getBAVorderingenMeer1JaarHandelsvorderingenProperty();
+
+    SimpleStringProperty getBAVorderingenMeer1JaarOverigeVorderingenProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringVoorradenProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringVoorradenGrondHulpstoffenProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringVoorradenGoederenBewerkingProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringVoorradenGereedProductProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringVoorradenHandelsgoederenProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringVoorradenOnroerendeGoederenVerkoopProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringVoorradenVooruitbetalingenProperty();
+
+    SimpleStringProperty getBAVoorradenBestellingenUitvoeringBestellingenUitvoeringProperty();
+
+    SimpleStringProperty getBAVorderingenHoogstens1JaarProperty();
+
+    SimpleStringProperty getBAVorderingenHoogstens1JaarHandelsvorderingenProperty();
+
+    SimpleStringProperty getBAVorderingenHoogstens1JaarOverigeVorderingenProperty();
+
+    SimpleStringProperty getBAGeldBeleggingenProperty();
+
+    SimpleStringProperty getBAGeldBeleggingenEigenAandelenProperty();
+
+    SimpleStringProperty getBAGeldBeleggingenOverigeBeleggingenProperty();
+
+    SimpleStringProperty getBALiquideMiddelenProperty();
+
+    SimpleStringProperty getBAOverlopendeRekeningenProperty();
+
+    SimpleStringProperty getBATotaalActivaProperty();
+
+    //PASSIVA
+    //EIGEN VERMOGEN
+    SimpleStringProperty getBPEigenVermogenProperty();
+
+    SimpleStringProperty getBPKapitaalProperty();
+
+    SimpleStringProperty getBPKapitaalGeplaatstProperty();
+
+    SimpleStringProperty getBPKapitaalNietOpgevraagdProperty();
+
+    SimpleStringProperty getBPUitgiftepremiesProperty();
+
+    SimpleStringProperty getBPHerwaarderingsmeerwaardenProperty();
+
+    SimpleStringProperty getBPReservesProperty();
+
+    SimpleStringProperty getBPReservesWettelijkeReserveProperty();
+
+    SimpleStringProperty getBPReservesOnbeschikbareReservesProperty();
+
+    SimpleStringProperty getBPReservesOnbeschikbareReservesEigenAandelenProperty();
+
+    SimpleStringProperty getBPReservesOnbeschikbareReservesAndereProperty();
+
+    SimpleStringProperty getBPReservesBelastingvrijeReservesProperty();
+
+    SimpleStringProperty getBPReservesBeschikbareReservesProperty();
+
+    SimpleStringProperty getBPOvergedragenWinstVerliesProperty();
+
+    SimpleStringProperty getBPKapitaalSubsidiesProperty();
+
+    SimpleStringProperty getBPVoorschotVennotenVerdelingNettoActiefProperty();
+
+    //VOORZIENINGEN EN UITGESTELDE BELASTINGEN
+    SimpleStringProperty getBPVoorzieningenUitgesteldeBelastingenProperty();
+    
+    SimpleStringProperty getBPVoorzieningenRisicosKostenProperty();
+
+    SimpleStringProperty getBPVoorzieningenRisicosKostenPensioenenSoortelijkeVerplichtingenProperty();
+
+    SimpleStringProperty getBPVoorzieningenRisicosKostenFiscaleLastenProperty();
+
+    SimpleStringProperty getBPVoorzieningenRisicosKostenGroteHerstellingsOnderhoudswerkenProperty();
+
+    SimpleStringProperty getBPVoorzieningenRisicosKostenMilieuverplichtingenProperty();
+
+    SimpleStringProperty getBPVoorzieningenRisicosKostenOverigeProperty();
+
+    SimpleStringProperty getBPUitgesteldeBelastingenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarFinancieleSchuldenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarFinancieleSchuldenAchtergesteldeLeningenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarFinancieleSchuldenNietAchtergesteldeObligatieleningenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarFinancieleSchuldenLeasingschuldenSoortgelijkeSchuldenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarFinancieleSchuldenKredietinstellingenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarFinancieleSchuldenOverigeLeningenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarHandelsschuldenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarHandelsschuldenLeveranciersProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarHandelsschuldenTeBetalenWisselsProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarOntvangenVooruitbetalingenBestellingenProperty();
+
+    SimpleStringProperty getBPSchuldenMeer1JaarOverigeSchuldenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarSchuldenMeer1JaarBinnenJaarVervallenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarFinancieleSchuldenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarFinancieleSchuldenKredietinstellingenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarFinancieleSchuldenOverigeLeningenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarHandelsschuldenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarHandelsschuldenLeveranciersProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarHandelsschuldenTeBetalenWisselsProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarOntvangenVooruitbetalingenBestellingenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBelastingenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBezoldigingenSocialeLastenProperty();
+
+    SimpleStringProperty getBPSchuldenHoogstens1JaarOverigeSchuldenProperty();
+
+    SimpleStringProperty getBPOverlopendeRekeningenProperty();
+
+    SimpleStringProperty getBPTotaalPassivaProperty();
+
+    //RESULATATENREKENING
+    
+    //BEDRIJFOPBRENGST
+    SimpleStringProperty getRRBedrijfsopbrengstenProperty();
+
+    SimpleStringProperty getRRBedrijfsopbrengstenOmzetProperty();
+
+    SimpleStringProperty getRRBedrijfsopbrengstenToenameAfnameVoorraadGoederenBewerkingGereedProductBestellingenUitvoeringProperty();
+
+    SimpleStringProperty getRRBedrijfsopbrengstenGeproduceerdeVasteActivaProperty();
+
+    SimpleStringProperty getRRBedrijfsopbrengstenAndereBedrijfsopbrengstenProperty();
+
+    SimpleStringProperty getRRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengstenProperty();
+
+    //BEDRIJFSKOSTEN
+    SimpleStringProperty getRRBedrijfskostenProperty();
+    
+    SimpleStringProperty getRRBedrijfskostenHandelsgoederenGrondHulpstoffenProperty();
+    
+    SimpleStringProperty getRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopenProperty();
+    
+    SimpleStringProperty getRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToenameProperty();
+    
+    SimpleStringProperty getRRBedrijfskostenDienstenDiverseGoederenProperty();
+    
+    SimpleStringProperty getRRBedrijfskostenBezoldigingenSocialeLastenPensioenenProperty();
+    
+    SimpleStringProperty getRRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActivaProperty();
+
+    SimpleStringProperty getRRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingenProperty();
+
+    SimpleStringProperty getRRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingenProperty();
+
+    SimpleStringProperty getRRBedrijfskostenAndereBedrijfskostenProperty();
+    
+    SimpleStringProperty getRRBedrijfskostenHerstructurerngskostenGeactiveerdeBedrijfskostenProperty();
+    
+    SimpleStringProperty getRRBedrijfskostenNietRecurrenteBedrijfskostenProperty();
+    
+    //BEDRIJFSWINSTVERLIES
+    SimpleStringProperty getRRBedrijfsWinstVerliesProperty();
+    
+    //FINANCIËLE OPBRENGSTEN
+    SimpleStringProperty getRRFinancieleOpbrengstenProperty();
+    
+    SimpleStringProperty getRRFinancieleOpbrengstenRecurrentProperty();
+    
+    SimpleStringProperty getRRFinancieleOpbrengstenRecurrentOpbrengstenFinancieleVasteActivaProperty();
+    
+    SimpleStringProperty getRRFinancieleOpbrengstenRecurrentOpbrengstenVlottendeActivaProperty();
+    
+    SimpleStringProperty getRRFinancieleOpbrengstenRecurrentAndereFinancieleOpbrengstenProperty();
+    
+    SimpleStringProperty getRRFinancieleOpbrengstenNietRecurrentProperty();
+    
+    //FINANCIËLE KOSTEN
+    SimpleStringProperty getRRFinancieleKostenProperty();
+    
+    SimpleStringProperty getRRFinancieleKostenRecurrentProperty();
+    
+    SimpleStringProperty getRRFinancieleKostenRecurrentKostenSchuldenProperty();
+    
+    SimpleStringProperty getRRFinancieleKostenRecurrentWaardeverminderingenVlottendeActivaAndereVoorradenBestellingenUitvoeringHandelvorderingenToevoegingenTerugnemingenProperty();
+    
+    SimpleStringProperty getRRFinancieleKostenRecurrentAndereFinancieleKostenProperty();
+    
+    SimpleStringProperty getRRFinancieleKostenNietRecurrentProperty();
+    
+    //ANDERE
+    
+    SimpleStringProperty getRRWinstVerliesBoekjaarVoorBelastingenProperty();
+    
+    SimpleStringProperty getRROntrekkingenUitgesteldeBelastingenProperty();
+    
+    SimpleStringProperty getRROverboekingUitgesteldeBelastingenProperty();
+    
+    SimpleStringProperty getRRBelastingenOpResultaatProperty();
+    
+    SimpleStringProperty getRRBelastingenOpResultaatBelastingenProperty();
+    
+    SimpleStringProperty getRRBelastingenOpResultaatRegulariseringBelastingenTerugnemingVoorzieningenBelastingenProperty();
+    
+    SimpleStringProperty getRRWinstVerliesBoekjaarProperty();
+    
+    SimpleStringProperty getRROntrekkingBelastingvrijeReservesProperty();
+    
+    SimpleStringProperty getRROverboekingBelastingvrijeReservesProperty();
+    
+    SimpleStringProperty getRRTeBestemmenWinstVerliesBoekjaarProperty();
