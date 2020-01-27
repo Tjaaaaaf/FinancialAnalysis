@@ -3,7 +3,6 @@ package Gui;
 import Domein.DocumentComparator;
 import Domein.DocumentWrapper;
 import Domein.DomeinController;
-import Interfaces.IDocumentBuilder;
 import Domein.ReportFactory;
 import Enums.ReportStyle;
 import Utils.XmlUtil;
@@ -85,7 +84,6 @@ public class MakeReportScreenController extends VBox {
             directoryFile = null;
             tfLocatie.setText("");
         }
-
     }
 
     @FXML
@@ -130,13 +128,15 @@ public class MakeReportScreenController extends VBox {
 
     private void writeReport() throws IllegalArgumentException {
         try {
-            File file = new File(tfLocatie.getText() + "\\" + tfName.getText() + ".xls");
-            FileOutputStream out = new FileOutputStream(file);
-            prepareDocuments();
-            createReport();
+            String slash = System.getProperty("os.name").startsWith("Windows")?"\\":"/";
+            File file = new File(tfLocatie.getText() + slash + tfName.getText() + ".xls");
 
-            workbook.write(out);
-            out.close();
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                prepareDocuments();
+                createReport();
+                
+                workbook.write(out);
+            }
             workbook.close();
 
             showSuccessAlert();

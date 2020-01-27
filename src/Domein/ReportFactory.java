@@ -1770,13 +1770,13 @@ public class ReportFactory {
         DoubleStyleBoldTop.setDataFormat(numberFormatter.getFormat("### ### ##0.00"));
         DoubleStyleBoldTop.setFont(fontBold);
         DoubleStyleBoldTop.setBorderTop(BorderStyle.THIN);
-        
+
         NumberBottomTop = workbook.createCellStyle();
         NumberBottomTop.setFont(fontBold);
         NumberBottomTop.setBorderTop(BorderStyle.THIN);
         NumberBottomTop.setBorderBottom(BorderStyle.THIN);
         NumberBottomTop.setDataFormat(numberFormatter.getFormat("### ### ##0"));
-        
+
         ProcentStyleBoldBottomTop = workbook.createCellStyle();
         ProcentStyleBoldBottomTop.setDataFormat(numberFormatter.getFormat("### ### ##0.00%"));
         ProcentStyleBoldBottomTop.setFont(fontBold);

@@ -120,7 +120,11 @@ public class DocumentManagementScreenController extends VBox {
 
     private void setOriginPreference(File file) {
         String path = file.getPath();
-        int indexOflastSlash = path.lastIndexOf('\\');
+        int indexOflastSlash = 0;
+        
+        String slash = System.getProperty("os.name").startsWith("Windows") ? "\\" : "/";
+        
+        indexOflastSlash = path.lastIndexOf(slash);
         String directoryPath = path.substring(0, indexOflastSlash);
         xmlUtil.setStringFromPreferences("defaultOrigin", directoryPath);
     }
