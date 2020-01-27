@@ -1,3 +1,8 @@
 .idea
 dist
 exe
+build
+misc
+nbproject
+build.xml
+manifest.mf
