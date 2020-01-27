@@ -621,7 +621,7 @@ public class ReportFactory {
         temp89.setCellStyle(Bold);
         for (int i = 0; i < documents.size(); i++) {
             Cell temp90 = row31.createCell(i + 1, CellType.NUMERIC);
-            temp90.setCellValue(Math.round(Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BPSchuldenHoogstens1Jaar)) + Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BPOverlopendeRekeningen)) - getLeveranciers(i)));
+            temp90.setCellValue(Math.round(getAndereSchuldenKorteTermijn(i)));
             temp90.setCellStyle(BoldNumber);
         }
 
@@ -1922,7 +1922,7 @@ public class ReportFactory {
     }
 
     private double getKorteTermijnSchulden(int index) {
-        return Double.parseDouble(documents.get(index).getPropertiesMap().get(PropertyName.BPSchuldenHoogstens1Jaar)) + Double.parseDouble(documents.get(index).getPropertiesMap().get(PropertyName.BPOverlopendeRekeningen)) + getKorteTermijnFinancieleSchulden(index);
+        return Double.parseDouble(documents.get(index).getPropertiesMap().get(PropertyName.BPSchuldenHoogstens1Jaar)) + Double.parseDouble(documents.get(index).getPropertiesMap().get(PropertyName.BPOverlopendeRekeningen));
     }
 
     private double getVlottendeActiva(int index) {
@@ -1957,7 +1957,7 @@ public class ReportFactory {
     }
 
     private double getLeveranciers(int index) {
-        return Double.parseDouble(documents.get(index).getPropertiesMap().get(PropertyName.BPSchuldenMeer1JaarHandelsschuldenLeveranciers));
+        return Double.parseDouble(documents.get(index).getPropertiesMap().get(PropertyName.BPSchuldenHoogstens1JaarHandelsschuldenLeveranciers));
     }
 
     private double getHandelsvorderingen(int index) {
@@ -2042,5 +2042,12 @@ public class ReportFactory {
         } else {
             return getBedrijfsOpbrengsten(index) - getAankopen(index);
         }
+    }
+
+    private double getAndereSchuldenKorteTermijn(int i) throws NumberFormatException {
+        return Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BPSchuldenHoogstens1Jaar))
+                + Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BPOverlopendeRekeningen))
+                - getLeveranciers(i)
+                - Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchulden));
     }
 }

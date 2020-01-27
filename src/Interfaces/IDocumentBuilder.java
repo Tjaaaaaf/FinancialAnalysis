@@ -174,8 +174,6 @@ public interface IDocumentBuilder {
 
     IDocumentBuilder addBPSchuldenMeer1JaarHandelsschulden();
 
-    IDocumentBuilder addBPSchuldenMeer1JaarHandelsschuldenLeveranciers();
-
     IDocumentBuilder addBPSchuldenMeer1JaarHandelsschuldenTeBetalenWissels();
 
     IDocumentBuilder addBPSchuldenMeer1JaarOntvangenVooruitbetalingenBestellingen();

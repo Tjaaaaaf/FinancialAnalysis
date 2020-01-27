@@ -75,7 +75,6 @@ public enum PropertyName {
     BPSchuldenMeer1JaarFinancieleSchuldenKredietinstellingen,
     BPSchuldenMeer1JaarFinancieleSchuldenOverigeLeningen,
     BPSchuldenMeer1JaarHandelsschulden,
-    BPSchuldenMeer1JaarHandelsschuldenLeveranciers,
     BPSchuldenMeer1JaarHandelsschuldenTeBetalenWissels,
     BPSchuldenMeer1JaarOntvangenVooruitbetalingenBestellingen,
     BPSchuldenMeer1JaarOverigeSchulden,

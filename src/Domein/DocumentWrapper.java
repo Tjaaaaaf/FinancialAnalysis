@@ -580,12 +580,6 @@ public class DocumentWrapper implements IDocumentWrapper {
         }
         
         @Override
-        public IDocumentBuilder addBPSchuldenMeer1JaarHandelsschuldenLeveranciers() {
-            properties.replace(PropertyName.BPSchuldenMeer1JaarHandelsschuldenLeveranciers, getStringFromXBRL("SuppliersInvoicesToReceiveWithinOneYear"));
-            return this;
-        }
-        
-        @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarHandelsschuldenTeBetalenWissels() {
             properties.replace(PropertyName.BPSchuldenMeer1JaarHandelsschuldenTeBetalenWissels, getStringFromXBRL("BillExchangeMoreOneYear"));
             return this;
