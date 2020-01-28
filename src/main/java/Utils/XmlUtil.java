@@ -110,9 +110,7 @@ public final class XmlUtil {
                 }
             }
             sendDOMToFile(doc);
-        } catch (ParserConfigurationException | SAXException | IOException | TransformerConfigurationException ex) {
-            Logger.getLogger(XmlUtil.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (TransformerException ex) {
+        } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
             Logger.getLogger(XmlUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
