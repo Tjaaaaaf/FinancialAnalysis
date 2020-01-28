@@ -1,16 +1,18 @@
 package Domein;
 
-import Interfaces.IDocumentWrapper;
-import Interfaces.IDocumentBuilder;
 import Enums.PropertyName;
-import static Utils.XmlUtil.asList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import Interfaces.IDocumentBuilder;
+import Interfaces.IDocumentWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static Utils.XmlUtil.asList;
 
 public class DocumentWrapper implements IDocumentWrapper {
     

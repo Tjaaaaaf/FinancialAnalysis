@@ -3,9 +3,10 @@ package Persistence;
 import Domein.DocumentWrapper.DocumentBuilder;
 import Domein.DomeinController;
 import Interfaces.IDocumentBuilder;
+import javafx.collections.ObservableList;
+
 import java.io.File;
 import java.util.List;
-import javafx.collections.ObservableList;
 
 public class PersistenceController {
 

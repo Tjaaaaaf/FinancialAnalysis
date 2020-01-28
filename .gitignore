@@ -1,8 +1,11 @@
-.idea
-dist
-exe
-build
-misc
-nbproject
-build.xml
-manifest.mf
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/

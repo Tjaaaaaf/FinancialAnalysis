@@ -6,13 +6,6 @@ import Domein.DomeinController;
 import Domein.ReportFactory;
 import Enums.ReportStyle;
 import Utils.XmlUtil;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -28,6 +21,14 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class MakeReportScreenController extends VBox {
 
@@ -55,7 +56,7 @@ public class MakeReportScreenController extends VBox {
     private Button btnMaak;
 
     public MakeReportScreenController(DomeinController domeinController, StartScreenController startScreenController, ReportStyle style) {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("MakeReportScreen.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MakeReportScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
         try {

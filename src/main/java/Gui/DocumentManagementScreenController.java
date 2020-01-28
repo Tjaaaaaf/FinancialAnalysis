@@ -5,26 +5,23 @@ import Domein.DomeinController;
 import Exceptions.DuplicateDocumentException;
 import Exceptions.IllegalExtensionException;
 import Utils.XmlUtil;
-import java.io.File;
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
 
 public class DocumentManagementScreenController extends VBox {
 
@@ -53,7 +50,7 @@ public class DocumentManagementScreenController extends VBox {
     private TableColumn<DocumentBuilder, Boolean> tcSelect;
 
     public DocumentManagementScreenController(DomeinController domeincontroller, StartScreenController startScreenController) {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("DocumentManagementScreen.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DocumentManagementScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
         try {

@@ -2,9 +2,10 @@ package Interfaces;
 
 import Domein.Business;
 import Enums.PropertyName;
-import java.util.Map;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+
+import java.util.Map;
 
 public interface IDocumentWrapper {
 

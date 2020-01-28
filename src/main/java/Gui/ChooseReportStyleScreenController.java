@@ -2,12 +2,13 @@ package Gui;
 
 import Domein.DomeinController;
 import Enums.ReportStyle;
-import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
+
+import java.io.IOException;
 
 public class ChooseReportStyleScreenController extends VBox {
 
@@ -26,7 +27,7 @@ public class ChooseReportStyleScreenController extends VBox {
     private Button btnTerug;
 
     public ChooseReportStyleScreenController(DomeinController domeinController, StartScreenController startScreenController) {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("ChooseReportStyleScreen.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ChooseReportStyleScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
         try {

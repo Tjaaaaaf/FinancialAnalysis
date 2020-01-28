@@ -1,11 +1,12 @@
 package Domein;
 
-import Interfaces.IDocumentBuilder;
 import Domein.DocumentWrapper.DocumentBuilder;
+import Interfaces.IDocumentBuilder;
 import Persistence.PersistenceController;
-import java.io.File;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import java.io.File;
 
 public class DomeinController {
 

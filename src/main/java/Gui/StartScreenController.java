@@ -1,16 +1,17 @@
 package Gui;
 
 import Domein.DomeinController;
-import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.BorderPane;
+
+import java.io.IOException;
 
 public class StartScreenController extends BorderPane {
 
     private final DomeinController domeincontroller;
 
     public StartScreenController(DomeinController domeincontroller) {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("StartScreen.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/StartScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
         try {
