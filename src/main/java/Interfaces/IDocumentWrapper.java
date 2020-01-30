@@ -2,6 +2,7 @@ package Interfaces;
 
 import Domein.Business;
 import Enums.PropertyName;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -17,7 +18,7 @@ public interface IDocumentWrapper {
 
     SimpleStringProperty getNameProperty();
 
-    SimpleBooleanProperty getSelectedProperty();
+    BooleanProperty getSelectedProperty();
 
     Map<PropertyName, String> getPropertiesMap();
 

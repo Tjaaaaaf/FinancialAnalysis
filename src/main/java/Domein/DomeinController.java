@@ -20,8 +20,8 @@ public class DomeinController {
         return persistenceController.addDocument(file);
     }
 
-    public void removeDocuments() {
-        persistenceController.removeDocuments();
+    public void removeDocument(String documentName) {
+        persistenceController.removeDocument(documentName);
     }
 
     public IDocumentBuilder getDocumentBuilder(String name) {

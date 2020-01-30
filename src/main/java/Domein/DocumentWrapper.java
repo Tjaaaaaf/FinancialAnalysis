@@ -3,6 +3,7 @@ package Domein;
 import Enums.PropertyName;
 import Interfaces.IDocumentBuilder;
 import Interfaces.IDocumentWrapper;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import org.w3c.dom.Document;
@@ -82,7 +83,11 @@ public class DocumentWrapper implements IDocumentWrapper {
             for (PropertyName propname : PropertyName.values()) {
                 properties.put(propname, "0");
             }
-            this.business = this.business = new Business(document.getElementsByTagName("pfs-gcd:EntityCurrentLegalName").item(0).getTextContent(),
+            this.business = extractBusiness(document);
+        }
+
+        private Business extractBusiness(Document document) {
+            return new Business(document.getElementsByTagName("pfs-gcd:EntityCurrentLegalName").item(0).getTextContent(),
                     document.getElementsByTagName("pfs-gcd:IdentifierValue").item(0).getTextContent(),
                     document.getElementsByTagName("pfs-gcd:Street").item(0).getTextContent(),
                     document.getElementsByTagName("pfs-gcd:Number").item(0).getTextContent(),
@@ -90,11 +95,26 @@ public class DocumentWrapper implements IDocumentWrapper {
                     document.getElementsByTagName("pfs-gcd:PostalCodeCity").item(0).getChildNodes().item(0) == null ? "" : document.getElementsByTagName("pfs-gcd:PostalCodeCity").item(0).getTextContent(),
                     document.getElementsByTagName("pfs-gcd:CountryCode").item(0).getChildNodes().item(0) == null ? "" : document.getElementsByTagName("pfs-gcd:CountryCode").item(0).getTextContent());
         }
-        
+
         public void setSelectedProperty(SimpleBooleanProperty selectedProperty) {
             this.selectedProperty = selectedProperty;
         }
-        
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public int getYear() {
+            return year;
+        }
+
+        @Override
+        public Business getBusiness() {
+            return business;
+        }
+
         @Override
         public SimpleStringProperty getNameProperty() {
             return nameProperty;

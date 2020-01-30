@@ -22,8 +22,8 @@ public class PersistenceController {
         return documentRepository.addDocument(file);
     }
 
-    public void removeDocuments() {
-        documentRepository.removeDocuments();
+    public void removeDocument(String documentName) {
+        documentRepository.removeDocument(documentName);
     }
 
     public IDocumentBuilder getDocumentBuilder(String name) {

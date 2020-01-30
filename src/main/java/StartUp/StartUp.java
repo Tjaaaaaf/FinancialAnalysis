@@ -15,12 +15,12 @@ public class StartUp extends Application {
         StartScreenController root = new StartScreenController(domeincontroller);
 
         Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("/css/style.css").toString());
 
         stage.setTitle("FinancialAnalysis");
         stage.setScene(scene);
-        stage.setWidth(370);
-        stage.setHeight(370);
-        stage.setResizable(false);
+        stage.setWidth(600);
+        stage.setHeight(500);
         stage.show();
 
     }

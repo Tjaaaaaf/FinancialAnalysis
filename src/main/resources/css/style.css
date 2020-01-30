@@ -1,0 +1,26 @@
+.table-view .column-header .label {
+    -fx-text-fill: #d0dff2;
+    -fx-font-weight: bold;
+}
+
+.column-header{
+    -fx-background-color: #0F2940;
+}
+
+.table-view{
+    -fx-background-color: transparent;
+}
+
+.table-view:focused{
+   -fx-background-color: transparent;
+}
+
+.table-row-cell:odd{
+    -fx-background-color: #0F2940;
+    -fx-background-insets: 0,0 0 1 0;
+}
+
+.table-row-cell:even{
+    -fx-background-color: #1c4468;
+    -fx-background-insets: 0,0 0 1 0;
+}

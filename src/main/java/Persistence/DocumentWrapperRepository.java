@@ -88,17 +88,9 @@ public class DocumentWrapperRepository {
         return null;
     }
 
-    public void removeDocuments() {
-        List<String> names = new ArrayList<>();
-        documentMap.values().stream().forEach(builder -> {
-            if (builder.getSelectedProperty().get()) {
-                names.add(builder.getNameProperty().get());
-            }
-        });
-        Set namesSet = new HashSet<String>();
-        namesSet.addAll(names);
-        documentMap.keySet().removeAll(namesSet);
-        documentNames.removeAll(names);
+    public void removeDocument(String documentName) {
+        documentMap.remove(documentName);
+        documentNames.remove(documentName);
     }
 
 }
