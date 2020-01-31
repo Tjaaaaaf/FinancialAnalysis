@@ -9,10 +9,8 @@ import Utils.XmlUtil;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -32,30 +30,34 @@ import java.util.List;
 
 public class MakeReportScreenController extends VBox {
 
+    //region Properties
     private final DomeinController domeinController;
     private final DirectoryChooser directoryChooser;
     private final StartScreenController startScreenController;
     private final ReportStyle style;
     private final HSSFWorkbook workbook;
     private final List<DocumentWrapper> documents;
+    private final SettingsScreenController settingsScreenController;
     private File directoryFile;
     private HSSFSheet report;
     private XmlUtil xmlUtil = new XmlUtil();
+    //endregion
 
+    //region FXMLProperties
     @FXML
-    private TextField tfLocatie;
+    private TextField tfLocation;
     @FXML
-    private Button btnLocatie;
+    private Button btnLocation;
     @FXML
     private TextField tfName;
     @FXML
-    private Label lblFout;
+    private Button btnBack;
     @FXML
-    private Button btnTerug;
-    @FXML
-    private Button btnMaak;
+    private Button btnMake;
+    //endregion
 
-    public MakeReportScreenController(DomeinController domeinController, StartScreenController startScreenController, ReportStyle style) {
+    //region Constructor
+    public MakeReportScreenController(DomeinController domeinController, StartScreenController startScreenController, ReportStyle style, SettingsScreenController settingsScreenController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MakeReportScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
@@ -66,6 +68,7 @@ public class MakeReportScreenController extends VBox {
         }
         this.domeinController = domeinController;
         this.startScreenController = startScreenController;
+        this.settingsScreenController = settingsScreenController;
         this.directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select directory");
         this.style = style;
@@ -74,75 +77,90 @@ public class MakeReportScreenController extends VBox {
 
         buildGui();
     }
+    //endregion
 
+    //region BuildGUI
     private void buildGui() {
-        lblFout.setVisible(false);
         String defaultSource = xmlUtil.getStringFromPreferences("defaultSource");
         if (defaultSource != null) {
             directoryFile = new File(defaultSource);
-            tfLocatie.setText(defaultSource);
+            tfLocation.setText(defaultSource);
         } else {
             directoryFile = null;
-            tfLocatie.setText("");
+            tfLocation.setText("");
         }
     }
+    //endregion
 
+    //region FXMLFunctions
     @FXML
-    private void goToPreviousScreen(ActionEvent event) {
-        startScreenController.setCenter(new ChooseReportStyleScreenController(domeinController, startScreenController));
+    private void back(ActionEvent event) {
+        startScreenController.setCenter(settingsScreenController);
+        startScreenController.switchColorSettingsStep();
+        startScreenController.switchColorSaveStep();
     }
 
     @FXML
-    private void kiesLocatie(ActionEvent event) {
+    private void chooseLocation(ActionEvent event) {
         directoryFile = directoryChooser.showDialog(Stage.getWindows().filtered(window -> window.isShowing()).get(0));
         if (directoryFile != null) {
-            tfLocatie.setText(directoryFile.getPath());
+            tfLocation.setText(directoryFile.getPath());
             xmlUtil.setStringFromPreferences("defaultSource", directoryFile.getPath());
         }
     }
 
     @FXML
-    private void maakReport(ActionEvent event) {
+    private void makeSheet(ActionEvent event) {
         try {
             if (tfName.getText().toCharArray().length >= 30) {
-                throw new IllegalArgumentException("Naam mag niet langer zijn dan 31 karakters");
+                throw new IllegalArgumentException("Naam mag niet langer zijn dan 31 karakters.");
             }
             if (tfName.getText().toCharArray().length == 0) {
-                throw new IllegalArgumentException("Naam mag niet leeg zijn");
+                throw new IllegalArgumentException("Naam mag niet leeg zijn.");
             }
-            File test = new File(tfLocatie.getText());
+            File test = new File(tfLocation.getText());
             if (!test.isDirectory()) {
-                throw new IllegalArgumentException("Locatie is niet geldig");
+                throw new IllegalArgumentException("Locatie is niet geldig.");
             }
             if (!test.exists()) {
-                throw new IllegalArgumentException("Locatie is niet geldig");
+                throw new IllegalArgumentException("Locatie is niet geldig.");
             }
 
             report = workbook.createSheet(tfName.getText());
 
             writeReport();
         } catch (IllegalArgumentException ex) {
-            lblFout.setVisible(true);
-            lblFout.setText(ex.getMessage());
+            CustomAlert.showAlert("Verkeerde input", "Verkeerde input", ex.getMessage(), this.getScene().getWindow(), AlertType.ERROR);
         }
     }
 
+    @FXML
+    private void checkForEnter(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER) {
+            makeSheet(new ActionEvent());
+        }
+    }
+    //endregion
+
+    //region Functions
     private void writeReport() throws IllegalArgumentException {
         try {
-            String slash = System.getProperty("os.name").startsWith("Windows")?"\\":"/";
-            File file = new File(tfLocatie.getText() + slash + tfName.getText() + ".xls");
+            String slash = System.getProperty("os.name").startsWith("Windows") ? "\\" : "/";
+            File file = new File(tfLocation.getText() + slash + tfName.getText() + ".xls");
 
             try (FileOutputStream out = new FileOutputStream(file)) {
                 prepareDocuments();
                 createReport();
-                
+
                 workbook.write(out);
             }
             workbook.close();
 
-            showSuccessAlert();
+            CustomAlert.showAlert("Aanmaken gelukt","Aanmaken excel bestand gelukt.","Bestand is aangemaakt.",this.getScene().getWindow(),AlertType.INFORMATION);
 
             startScreenController.setCenter(new DocumentManagementScreenController(domeinController, startScreenController));
+            startScreenController.switchColorSaveStep();
+            startScreenController.switchColorDocumentStep();
         } catch (FileNotFoundException ex) {
             throw new IllegalArgumentException("Het pad klopt niet");
         } catch (IOException ex) {
@@ -178,16 +196,8 @@ public class MakeReportScreenController extends VBox {
         Collections.sort(documents, new DocumentComparator());
     }
 
-    private void showSuccessAlert() {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Aanmaken gelukt");
-        alert.setHeaderText("Aanmaken excel bestand gelukt.");
-        alert.setContentText("Bestand is aangemaakt.");
-        alert.showAndWait();
-    }
-
     private void compileVergelijking() {
-        domeinController.getDocumentBuilders().stream().forEach(doc -> {
+        domeinController.getActiveDocumentBuilders().stream().forEach(doc -> {
             documents.add(doc.addBAVlottendeActiva()
                     .addBALiquideMiddelen()
                     .addBATotaalActiva()
@@ -235,7 +245,7 @@ public class MakeReportScreenController extends VBox {
     }
 
     private void compileHistoriek() {
-        domeinController.getDocumentBuilders().stream().forEach(doc -> {
+        domeinController.getActiveDocumentBuilders().stream().forEach(doc -> {
             documents.add(doc.addBAVasteActiva()
                     .addBAImmaterieleVasteActiva()
                     .addBAMaterieleVasteActiva()
@@ -294,10 +304,5 @@ public class MakeReportScreenController extends VBox {
                     .build());
         });
     }
-
-    private void checkForEnter(KeyEvent event) {
-        if (event.getCode() == KeyCode.ENTER) {
-            maakReport(new ActionEvent());
-        }
-    }
+    //endregion
 }

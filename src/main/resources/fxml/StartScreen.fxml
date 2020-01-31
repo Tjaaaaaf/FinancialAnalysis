@@ -1,5 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
-<fx:root type="BorderPane" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" />
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<fx:root type="BorderPane" xmlns="http://javafx.com/javafx/10.0.2" xmlns:fx="http://javafx.com/fxml/1">
+   <top>
+      <VBox prefHeight="70.0" prefWidth="600.0" style="-fx-background-color: #7394BF;" BorderPane.alignment="CENTER">
+         <children>
+            <HBox fx:id="hboxSteps" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+               <children>
+                  <Circle fx:id="circDocuments" fill="#465e8c" radius="15.0" stroke="#7394bd9a" strokeType="INSIDE" strokeWidth="3.0">
+                     <HBox.margin>
+                        <Insets left="11.0" />
+                     </HBox.margin>
+                  </Circle>
+                  <Region fx:id="region1" maxHeight="4.0" maxWidth="1.7976931348623157E308" prefHeight="4.0" prefWidth="197.0" style="-fx-background-color: #d0dff2;" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Region>
+                  <Circle fx:id="circSettings" fill="#d0dff2" radius="15.0" stroke="#7394bd9a" strokeType="INSIDE" strokeWidth="3.0" />
+                  <Region fx:id="region2" maxHeight="4.0" maxWidth="1.7976931348623157E308" prefHeight="4.0" prefWidth="197.0" style="-fx-background-color: #d0dff2;" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Region>
+                  <Circle fx:id="circSave" fill="#d0dff2" radius="15.0" stroke="#7394bd99" strokeType="INSIDE" strokeWidth="3.0">
+                     <HBox.margin>
+                        <Insets right="11.0" />
+                     </HBox.margin>
+                  </Circle>
+               </children>
+               <padding>
+                  <Insets left="20.0" right="20.0" top="10.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="lblDocuments" alignment="CENTER" ellipsisString="" prefWidth="55.0" text="Documenten" textAlignment="CENTER" textFill="#465e8c" textOverrun="CLIP" wrapText="true">
+                     <font>
+                        <Font name="System Bold" size="10.0" />
+                     </font>
+                  </Label>
+                  <Region fx:id="region11" maxHeight="4.0" maxWidth="1.7976931348623157E308" prefHeight="4.0" prefWidth="197.0" HBox.hgrow="ALWAYS" />
+                  <Label fx:id="lblSettings" alignment="CENTER" ellipsisString="" prefWidth="55.0" text="Instellingen" textAlignment="CENTER" textFill="#d0dff2" textOverrun="CLIP" wrapText="true">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                  </Label>
+                  <Region fx:id="region111" maxHeight="4.0" maxWidth="1.7976931348623157E308" prefHeight="4.0" prefWidth="197.0" HBox.hgrow="ALWAYS" />
+                  <Label fx:id="lblSave" alignment="CENTER" ellipsisString="" prefWidth="55.0" text="Opslaan" textAlignment="CENTER" textFill="#d0dff2" textOverrun="CLIP" wrapText="true">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets left="20.0" right="20.0" />
+               </padding>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+</fx:root>

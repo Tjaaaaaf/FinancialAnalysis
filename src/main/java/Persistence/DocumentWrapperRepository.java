@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class DocumentWrapperRepository {
 
@@ -70,9 +71,9 @@ public class DocumentWrapperRepository {
         return null;
     }
 
-    public List<DocumentWrapper.DocumentBuilder> getDocumentBuilders() {
+    public List<DocumentWrapper.DocumentBuilder> getActiveDocumentBuilders() {
         List<DocumentWrapper.DocumentBuilder> documentBuilders = new ArrayList<>();
-        documentBuilders.addAll((Collection<DocumentWrapper.DocumentBuilder>) (Object) documentMap.values());
+        documentBuilders.addAll((Collection<DocumentWrapper.DocumentBuilder>) (Object) documentMap.values().stream().filter(d -> d.getSelectedProperty().get()).collect(Collectors.toList()));
         return documentBuilders;
     }
 

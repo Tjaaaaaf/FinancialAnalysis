@@ -20,7 +20,9 @@ public class StartUp extends Application {
         stage.setTitle("FinancialAnalysis");
         stage.setScene(scene);
         stage.setWidth(600);
+        stage.setMinWidth(600);
         stage.setHeight(500);
+        stage.setMinHeight(500);
         stage.show();
 
     }

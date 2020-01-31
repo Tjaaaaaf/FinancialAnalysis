@@ -28,8 +28,8 @@ public class DomeinController {
         return persistenceController.getDocumentBuilder(name);
     }
 
-    public ObservableList<DocumentBuilder> getDocumentBuilders() {
-        return FXCollections.observableArrayList(persistenceController.getDocumentBuilders());
+    public ObservableList<DocumentBuilder> getActiveDocumentBuilders() {
+        return FXCollections.observableArrayList(persistenceController.getActiveDocumentBuilders());
     }
 
     public ObservableList<String> getDocuments() {

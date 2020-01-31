@@ -30,8 +30,8 @@ public class PersistenceController {
         return documentRepository.getDocumentBuilderByName(name);
     }
 
-    public List<DocumentBuilder> getDocumentBuilders() {
-        return documentRepository.getDocumentBuilders();
+    public List<DocumentBuilder> getActiveDocumentBuilders() {
+        return documentRepository.getActiveDocumentBuilders();
     }
 
     public ObservableList<String> getDocuments() {
