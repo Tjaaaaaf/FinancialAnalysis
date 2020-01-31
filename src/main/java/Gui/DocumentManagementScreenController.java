@@ -5,6 +5,7 @@ import Domein.DomeinController;
 import Exceptions.DuplicateDocumentException;
 import Exceptions.IllegalExtensionException;
 import Utils.XmlUtil;
+import javafx.scene.control.Alert.AlertType;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -15,7 +16,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -29,13 +29,17 @@ import java.util.List;
 
 public class DocumentManagementScreenController extends VBox {
 
+    //region Properties
     private final DomeinController domeincontroller;
     private final FileChooser fileChooser;
     private final StartScreenController startScreenController;
     private SortedList<DocumentBuilder> sortedBuilders = new SortedList<>(FXCollections.observableArrayList());
     private final Comparator<DocumentBuilder> builderSorter = (builder1, builder2) -> builder1.getNameProperty().get().compareToIgnoreCase(builder2.getNameProperty().get());
     private final XmlUtil xmlUtil = new XmlUtil();
+    private SettingsScreenController next;
+    //endregion
 
+    //region FXMLProperties
     @FXML
     private HBox hbButtonBox;
     @FXML
@@ -52,7 +56,9 @@ public class DocumentManagementScreenController extends VBox {
     private TableColumn<DocumentBuilder, Boolean> tcSelect;
     @FXML
     private TableColumn<DocumentBuilder, DocumentBuilder> tcDelete;
+    //endregion
 
+    //region Constructor
     public DocumentManagementScreenController(DomeinController domeincontroller, StartScreenController startScreenController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DocumentManagementScreen.fxml"));
         loader.setRoot(this);
@@ -66,20 +72,15 @@ public class DocumentManagementScreenController extends VBox {
         this.domeincontroller = domeincontroller;
         this.startScreenController = startScreenController;
         this.fileChooser = new FileChooser();
-        fileChooser.setTitle("Select xbrl file");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("XBRL", "*.xbrl")
-        );
+
+        configureFileChooser();
         setDefaultOrigin();
 
         buildGui();
     }
+    //endregion
 
-    private void setDefaultOrigin() {
-        String defaultOrigin = xmlUtil.getStringFromPreferences("defaultOrigin");
-        fileChooser.setInitialDirectory(defaultOrigin.equals("") ? new File(System.getProperty("user.home")) : new File(defaultOrigin));
-    }
-
+    //region BuildGUI
     private void buildGui() {
         Label label = new Label("Geen bestanden geselecteerd");
         label.setTextFill(Color.web("#d0dff2"));
@@ -89,39 +90,16 @@ public class DocumentManagementScreenController extends VBox {
         tcSelect.setCellFactory(CheckBoxTableCell.forTableColumn(tcSelect));
         tcSelect.setCellValueFactory(celldata -> celldata.getValue().getSelectedProperty());
 
-        tcDelete.setCellValueFactory(
-                param -> new ReadOnlyObjectWrapper<>(param.getValue())
-        );
-        tcDelete.setCellFactory(param -> new TableCell<DocumentBuilder, DocumentBuilder>() {
-            private final Button btnDelete = new Button("x");
+        tcDelete.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
+        tcDelete.setCellFactory(param -> fillDeleteButtonTableCells());
 
-            @Override
-            protected void updateItem(DocumentBuilder documentbuilder, boolean empty) {
-                super.updateItem(documentbuilder, empty);
-
-                if (documentbuilder == null) {
-                    setGraphic(null);
-                    return;
-                }
-                btnDelete.setPrefHeight(18);
-                btnDelete.setMaxHeight(18);
-                btnDelete.setMinHeight(18);
-                btnDelete.setPadding(new Insets(0,7,0,7));
-                btnDelete.setStyle("-fx-background-color: RED; -fx-text-fill: WHITE");
-                setGraphic(btnDelete);
-                btnDelete.setOnAction(
-                        event -> {
-                            domeincontroller.removeDocument(documentbuilder.getName());
-                            fillTable();
-                        }
-                );
-            }
-        });
         fillTable();
 
         fixHeaders();
     }
+    //endregion
 
+    //region FXMLFunctions
     @FXML
     private void chooseDocument(ActionEvent event) {
         try {
@@ -145,10 +123,39 @@ public class DocumentManagementScreenController extends VBox {
                 fillTable();
             }
         } catch (IllegalExtensionException ex) {
-            ErrorAlert.showAlert("Fout bestandstype", "Fout bestandstype", "Het gekozen bestand is van een verkeerd bestandstype. Gelieve een bestand met extensie \".xbrl\" te selecteren.");
+            CustomAlert.showAlert("Fout bestandstype", "Fout bestandstype", "Het gekozen bestand is van een verkeerd bestandstype. Gelieve een bestand met extensie \".xbrl\" te selecteren.", this.getScene().getWindow(), AlertType.ERROR);
         } catch (DuplicateDocumentException ex) {
-            ErrorAlert.showAlert("Duplicaat bestand", "Duplicaat bestand", "Het gekozen bestand is al geselecteerd.");
+            CustomAlert.showAlert("Duplicaat bestand", "Duplicaat bestand", "Het gekozen bestand is al geselecteerd.", this.getScene().getWindow(), AlertType.ERROR);
         }
+    }
+
+    @FXML
+    private void makeAnalysis(ActionEvent event) {
+        if (!domeincontroller.getActiveDocumentBuilders().isEmpty()) {
+            if (next == null) {
+                next = new SettingsScreenController(domeincontroller, startScreenController, this);
+            }
+            startScreenController.setCenter(next);
+
+            startScreenController.switchColorDocumentStep();
+            startScreenController.switchColorSettingsStep();
+        } else {
+            CustomAlert.showAlert("Geen bestand geselecteerd", "Geen bestand geselecteerd", "Er is/zijn geen bestand(en) geselecteerd.", this.getScene().getWindow(), AlertType.ERROR);
+        }
+    }
+    //endregion
+
+    //region Functions
+    private void configureFileChooser() {
+        fileChooser.setTitle("Select xbrl file");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("XBRL", "*.xbrl")
+        );
+    }
+
+    private void setDefaultOrigin() {
+        String defaultOrigin = xmlUtil.getStringFromPreferences("defaultOrigin");
+        fileChooser.setInitialDirectory(defaultOrigin.equals("") ? new File(System.getProperty("user.home")) : new File(defaultOrigin));
     }
 
     private void setOriginPreference(File file) {
@@ -162,26 +169,39 @@ public class DocumentManagementScreenController extends VBox {
         xmlUtil.setStringFromPreferences("defaultOrigin", directoryPath);
     }
 
+    private TableCell<DocumentBuilder, DocumentBuilder> fillDeleteButtonTableCells() {
+        TableCell<DocumentBuilder, DocumentBuilder> temp = new TableCell<>() {
+            private final Button btnDelete = new Button("x");
+
+            @Override
+            protected void updateItem(DocumentBuilder documentbuilder, boolean empty) {
+                super.updateItem(documentbuilder, empty);
+
+                if (documentbuilder == null) {
+                    setGraphic(null);
+                    return;
+                }
+                btnDelete.setPrefHeight(17);
+                btnDelete.setMaxHeight(17);
+                btnDelete.setMinHeight(17);
+                btnDelete.setPadding(new Insets(0, 7, 0, 6));
+                btnDelete.getStyleClass().add("deleteButton");
+                setGraphic(btnDelete);
+                btnDelete.setOnAction(
+                        event -> {
+                            domeincontroller.removeDocument(documentbuilder.getName());
+                            fillTable();
+                        }
+                );
+            }
+        };
+        temp.setPadding(new Insets(2, 0, 0, 3.5));
+        return temp;
+    }
+
     private void fillTable() {
-        sortedBuilders = new SortedList<>(domeincontroller.getDocumentBuilders(), builderSorter);
+        sortedBuilders = new SortedList<>(domeincontroller.getActiveDocumentBuilders(), builderSorter);
         tvBestandenLijst.setItems(sortedBuilders);
-    }
-
-    @FXML
-    private void makeAnalysis(ActionEvent event) {
-        if (!domeincontroller.getDocumentBuilders().isEmpty()) {
-            startScreenController.setCenter(new ChooseReportStyleScreenController(domeincontroller, startScreenController));
-        } else {
-            showFailureAlert();
-        }
-    }
-
-    private void showFailureAlert() {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Geen bestand geselecteerd");
-        alert.setHeaderText("Actie niet uitgevoerd");
-        alert.setContentText("De actie is niet uitgevoerd omdat er geen bestand(en) is/zijn geselecteerd zijn.");
-        alert.showAndWait();
     }
 
     private void fixHeaders() {
@@ -196,5 +216,6 @@ public class DocumentManagementScreenController extends VBox {
             }
         });
     }
+    //endregion®
 
 }

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<fx:root alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="430.0" prefWidth="600.0" style="-fx-background-color: #0F2940;" type="VBox" xmlns="http://javafx.com/javafx/10.0.2" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox alignment="CENTER" maxHeight="50.0" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="580.0">
+         <padding>
+            <Insets bottom="10.0" top="10.0" />
+         </padding>
+         <children>
+            <Button fx:id="btnBack" maxHeight="28.0" maxWidth="67.0" mnemonicParsing="false" onAction="#back" prefHeight="28.0" prefWidth="67.0" style="-fx-background-color: #d0dff2;" styleClass="backButton" text="&lt;- Terug" textFill="#061726" />
+            <Region maxHeight="28.0" maxWidth="1.7976931348623157E308" prefHeight="28.0" prefWidth="449.0" HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnSave" maxHeight="28.0" maxWidth="64.0" mnemonicParsing="false" onAction="#save" prefHeight="28.0" prefWidth="64.0" style="-fx-background-color: #38A673;" styleClass="nextButton" text="Opslaan" textFill="#d0dff2" />
+         </children>
+      </HBox>
+      <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="360.0" prefWidth="580.0">
+         <children>
+            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="290.0" spacing="20.0">
+               <children>
+                  <Label text="Bedrijfstype:" textFill="#d0dff2">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <ChoiceBox fx:id="chboxCompany" maxHeight="28.0" maxWidth="150.0" prefHeight="28.0" prefWidth="150.0" style="-fx-background-color: #061726;" styleClass="choiceBox" />
+               </children>
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+               <padding>
+                  <Insets top="10.0" />
+               </padding>
+            </VBox>
+            <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="290.0" spacing="20.0">
+               <children>
+                  <Label text="Overzichtstype:" textFill="#d0dff2">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <ChoiceBox fx:id="chboxSheet" maxHeight="28.0" maxWidth="150.0" prefHeight="28.0" prefWidth="150.0" style="-fx-background-color: #061726;" styleClass="choiceBox" />
+               </children>
+               <padding>
+                  <Insets top="10.0" />
+               </padding>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</fx:root>
