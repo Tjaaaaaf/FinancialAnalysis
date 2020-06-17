@@ -43,27 +43,30 @@
             </HBox>
             <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label fx:id="lblDocuments" alignment="CENTER" ellipsisString="" prefWidth="55.0" text="Documenten" textAlignment="CENTER" textFill="#465e8c" textOverrun="CLIP" wrapText="true">
+                  <Label fx:id="lblDocuments" alignment="CENTER" ellipsisString="" prefWidth="65.0" text="Documenten" textAlignment="CENTER" textFill="#465e8c" textOverrun="CLIP" wrapText="true">
                      <font>
                         <Font name="System Bold" size="10.0" />
                      </font>
+                     <HBox.margin>
+                        <Insets left="15.0" />
+                     </HBox.margin>
                   </Label>
                   <Region fx:id="region11" maxHeight="4.0" maxWidth="1.7976931348623157E308" prefHeight="4.0" prefWidth="197.0" HBox.hgrow="ALWAYS" />
-                  <Label fx:id="lblSettings" alignment="CENTER" ellipsisString="" prefWidth="55.0" text="Instellingen" textAlignment="CENTER" textFill="#d0dff2" textOverrun="CLIP" wrapText="true">
+                  <Label fx:id="lblSettings" alignment="CENTER" ellipsisString="" prefWidth="65.0" text="Instellingen" textAlignment="CENTER" textFill="#d0dff2" textOverrun="CLIP" wrapText="true">
                      <font>
                         <Font size="10.0" />
                      </font>
                   </Label>
                   <Region fx:id="region111" maxHeight="4.0" maxWidth="1.7976931348623157E308" prefHeight="4.0" prefWidth="197.0" HBox.hgrow="ALWAYS" />
-                  <Label fx:id="lblSave" alignment="CENTER" ellipsisString="" prefWidth="55.0" text="Opslaan" textAlignment="CENTER" textFill="#d0dff2" textOverrun="CLIP" wrapText="true">
+                  <Label fx:id="lblSave" alignment="CENTER" ellipsisString="" prefWidth="65.0" text="Opslaan" textAlignment="CENTER" textFill="#d0dff2" textOverrun="CLIP" wrapText="true">
                      <font>
                         <Font size="10.0" />
                      </font>
+                     <HBox.margin>
+                        <Insets right="15.0" />
+                     </HBox.margin>
                   </Label>
                </children>
-               <padding>
-                  <Insets left="20.0" right="20.0" />
-               </padding>
             </HBox>
          </children>
       </VBox>

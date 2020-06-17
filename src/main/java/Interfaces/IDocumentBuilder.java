@@ -1,10 +1,9 @@
 package Interfaces;
 
-import Domein.Business;
-import Domein.DocumentWrapper;
+import Domain.Business;
+import Domain.DocumentWrapper;
 import Enums.PropertyName;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public interface IDocumentBuilder {

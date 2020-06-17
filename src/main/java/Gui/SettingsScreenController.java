@@ -1,6 +1,6 @@
 package Gui;
 
-import Domein.DomeinController;
+import Domain.DomeinController;
 import Enums.ReportStyle;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;

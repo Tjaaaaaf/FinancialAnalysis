@@ -1,6 +1,6 @@
 package Persistence;
 
-import Domein.DocumentWrapper;
+import Domain.DocumentWrapper;
 import Interfaces.IDocumentBuilder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

@@ -1,9 +1,9 @@
 package Gui;
 
-import Domein.DocumentComparator;
-import Domein.DocumentWrapper;
-import Domein.DomeinController;
-import Domein.ReportFactory;
+import Domain.DocumentComparator;
+import Domain.DocumentWrapper;
+import Domain.DomeinController;
+import Domain.ReportFactory;
 import Enums.ReportStyle;
 import Utils.XmlUtil;
 import javafx.event.ActionEvent;
@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -124,6 +125,10 @@ public class MakeReportScreenController extends VBox {
             }
             if (!test.exists()) {
                 throw new IllegalArgumentException("Locatie is niet geldig.");
+            }
+            File alreadyExists = new File(test.getPath() + String.format("\\%s.xls",tfName.getText()));
+            if(alreadyExists.exists()){
+                throw new IllegalArgumentException(String.format("Er bestaat al een overzicht met de naam \"%s\" op de locatie \"%s\".",tfName.getText(), tfLocation.getText()));
             }
 
             report = workbook.createSheet(tfName.getText());

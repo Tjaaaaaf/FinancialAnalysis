@@ -75,7 +75,7 @@ public final class XmlUtil {
                 file.createNewFile();
 
                 OutputStream output = Files.newOutputStream(Paths.get(sourceFile), StandardOpenOption.CREATE);
-                String defaultString = "<preferences><defaultSource></defaultSource><defaultOrigin></defaultOrigin></preferences>";
+                String defaultString = "<preferences><defaultSource>C:\\</defaultSource><defaultOrigin>C:\\</defaultOrigin></preferences>";
                 output.write(defaultString.getBytes());
                 output.flush();
                 output.close();

@@ -19,13 +19,13 @@
                </font>
             </Button>
             <Region maxHeight="28.0" maxWidth="1.7976931348623157E308" prefHeight="28.0" prefWidth="490.0" HBox.hgrow="ALWAYS" />
-                  <Button fx:id="btnAnalyse" maxHeight="28.0" maxWidth="62.0" mnemonicParsing="false" onAction="#makeAnalysis" prefHeight="28.0" prefWidth="62.0" style="-fx-background-color: #38A673;" styleClass="nextButton" text="Analyse" textFill="#d0dff2" />
+                  <Button fx:id="btnAnalyse" maxHeight="28.0" maxWidth="62.0" minHeight="28.0" minWidth="62.0" mnemonicParsing="false" onAction="#makeAnalysis" prefHeight="28.0" prefWidth="62.0" style="-fx-background-color: #38A673;" styleClass="nextButton" text="Analyse" textFill="#d0dff2" />
               </children>
          <padding>
             <Insets bottom="10.0" top="10.0" />
          </padding>
           </HBox>
-        <TableView fx:id="tvBestandenLijst" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="300.0" prefWidth="576.0" style="-fx-border-color: #d0dff2;" VBox.vgrow="ALWAYS">
+        <TableView fx:id="tvBestandenLijst" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="576.0" prefHeight="300.0" prefWidth="576.0" style="-fx-border-color: #d0dff2;" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="tcName" editable="false" maxWidth="1.7976931348623157E308" minWidth="522.0" prefWidth="522.0" sortable="false" style="-fx-text-fill: #d0dff2;" text="Naam" />
                 <TableColumn fx:id="tcSelect" maxWidth="27.0" minWidth="27.0" prefWidth="27.0" resizable="false" sortable="false" />

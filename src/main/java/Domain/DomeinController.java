@@ -1,6 +1,6 @@
-package Domein;
+package Domain;
 
-import Domein.DocumentWrapper.DocumentBuilder;
+import Domain.DocumentWrapper.DocumentBuilder;
 import Interfaces.IDocumentBuilder;
 import Persistence.PersistenceController;
 import javafx.collections.FXCollections;

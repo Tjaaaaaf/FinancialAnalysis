@@ -1,9 +1,8 @@
 package Interfaces;
 
-import Domein.Business;
+import Domain.Business;
 import Enums.PropertyName;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 import java.util.Map;

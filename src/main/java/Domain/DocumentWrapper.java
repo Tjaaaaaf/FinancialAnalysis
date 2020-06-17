@@ -1,9 +1,8 @@
-package Domein;
+package Domain;
 
 import Enums.PropertyName;
 import Interfaces.IDocumentBuilder;
 import Interfaces.IDocumentWrapper;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import org.w3c.dom.Document;

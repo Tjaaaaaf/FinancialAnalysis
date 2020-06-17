@@ -1,7 +1,7 @@
 package Gui;
 
-import Domein.DocumentWrapper.DocumentBuilder;
-import Domein.DomeinController;
+import Domain.DocumentWrapper.DocumentBuilder;
+import Domain.DomeinController;
 import Exceptions.DuplicateDocumentException;
 import Exceptions.IllegalExtensionException;
 import Utils.XmlUtil;
@@ -24,6 +24,9 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 
@@ -155,7 +158,10 @@ public class DocumentManagementScreenController extends VBox {
 
     private void setDefaultOrigin() {
         String defaultOrigin = xmlUtil.getStringFromPreferences("defaultOrigin");
-        fileChooser.setInitialDirectory(defaultOrigin.equals("") ? new File(System.getProperty("user.home")) : new File(defaultOrigin));
+        if(defaultOrigin == null || defaultOrigin.equals("") || !Files.exists(Paths.get(defaultOrigin)))
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        else
+            fileChooser.setInitialDirectory(new File(defaultOrigin));
     }
 
     private void setOriginPreference(File file) {

@@ -1,7 +1,7 @@
 package Persistence;
 
-import Domein.DocumentWrapper.DocumentBuilder;
-import Domein.DomeinController;
+import Domain.DocumentWrapper.DocumentBuilder;
+import Domain.DomeinController;
 import Interfaces.IDocumentBuilder;
 import javafx.collections.ObservableList;
 

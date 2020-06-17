@@ -1,4 +1,4 @@
-package Domein;
+package Domain;
 
 import Enums.PropertyName;
 import Enums.ReportStyle;

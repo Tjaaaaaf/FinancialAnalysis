@@ -1,6 +1,6 @@
 package Gui;
 
-import Domein.DomeinController;
+import Domain.DomeinController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;

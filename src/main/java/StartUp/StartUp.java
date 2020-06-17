@@ -1,6 +1,6 @@
 package StartUp;
 
-import Domein.DomeinController;
+import Domain.DomeinController;
 import Gui.StartScreenController;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -19,10 +19,9 @@ public class StartUp extends Application {
 
         stage.setTitle("FinancialAnalysis");
         stage.setScene(scene);
-        stage.setWidth(600);
-        stage.setMinWidth(600);
+        stage.setResizable(false);
+        stage.setWidth(620);
         stage.setHeight(500);
-        stage.setMinHeight(500);
         stage.show();
 
     }
