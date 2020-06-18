@@ -1,7 +1,7 @@
-package Interfaces;
+package Models.Interfaces;
 
-import Domain.Business;
-import Enums.PropertyName;
+import Models.Business;
+import Models.Enums.PropertyName;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 

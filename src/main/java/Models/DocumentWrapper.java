@@ -1,8 +1,8 @@
-package Domain;
+package Models;
 
-import Enums.PropertyName;
-import Interfaces.IDocumentBuilder;
-import Interfaces.IDocumentWrapper;
+import Models.Enums.PropertyName;
+import Models.Interfaces.IDocumentBuilder;
+import Models.Interfaces.IDocumentWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import org.w3c.dom.Document;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static Utils.XmlUtil.asList;
+import static Util.XmlUtil.asList;
 
 public class DocumentWrapper implements IDocumentWrapper {
     

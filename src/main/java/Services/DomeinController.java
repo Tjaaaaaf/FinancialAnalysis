@@ -1,7 +1,7 @@
-package Domain;
+package Services;
 
-import Domain.DocumentWrapper.DocumentBuilder;
-import Interfaces.IDocumentBuilder;
+import Models.DocumentWrapper.DocumentBuilder;
+import Models.Interfaces.IDocumentBuilder;
 import Persistence.PersistenceController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

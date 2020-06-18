@@ -1,4 +1,6 @@
-package Domain;
+package Util;
+
+import Models.DocumentWrapper;
 
 import java.util.Comparator;
 

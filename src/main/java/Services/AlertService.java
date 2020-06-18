@@ -1,11 +1,11 @@
-package Gui;
+package Services;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Window;
 
-public class CustomAlert {
+public class AlertService {
 
     public static void showAlert(String title, String headerText, String contentText, Window owner, AlertType type) {
         Alert customAlert = new Alert(type);

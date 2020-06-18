@@ -1,13 +1,14 @@
-package Domain;
+package Services;
 
-import Enums.PropertyName;
-import Enums.ReportStyle;
+import Models.Enums.PropertyName;
+import Models.Enums.ReportStyle;
+import Models.DocumentWrapper;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
 
 import java.util.List;
 
-public class ReportFactory {
+public class ReportService {
 
     private HSSFCellStyle BoldGreenCenter;
     private HSSFCellStyle Bold;
@@ -45,7 +46,7 @@ public class ReportFactory {
     private CellStyle NumberBottomTop;
     private CellStyle ProcentStyleBoldBottomTop;
 
-    public ReportFactory(HSSFWorkbook workbook, HSSFSheet report, List<DocumentWrapper> documents, ReportStyle style, HSSFDataFormat numberFormatter) {
+    public ReportService(HSSFWorkbook workbook, HSSFSheet report, List<DocumentWrapper> documents, ReportStyle style, HSSFDataFormat numberFormatter) {
         this.workbook = workbook;
         this.report = report;
         this.documents = documents;
