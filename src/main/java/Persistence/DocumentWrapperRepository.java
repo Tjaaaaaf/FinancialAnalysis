@@ -1,7 +1,7 @@
 package Persistence;
 
-import Domain.DocumentWrapper;
-import Interfaces.IDocumentBuilder;
+import Models.DocumentWrapper;
+import Models.Interfaces.IDocumentBuilder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.w3c.dom.DOMException;

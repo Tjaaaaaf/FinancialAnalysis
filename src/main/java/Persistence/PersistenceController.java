@@ -1,8 +1,8 @@
 package Persistence;
 
-import Domain.DocumentWrapper.DocumentBuilder;
-import Domain.DomeinController;
-import Interfaces.IDocumentBuilder;
+import Models.DocumentWrapper.DocumentBuilder;
+import Services.DomeinController;
+import Models.Interfaces.IDocumentBuilder;
 import javafx.collections.ObservableList;
 
 import java.io.File;

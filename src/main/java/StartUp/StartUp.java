@@ -1,7 +1,7 @@
 package StartUp;
 
-import Domain.DomeinController;
-import Gui.StartScreenController;
+import Services.DomeinController;
+import ScreenControllers.StartScreenController;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
