@@ -11,3 +11,9 @@ META-INF/
 # Maven
 log/
 target/
+.project
+.classpath
+
+# vscode
+.settings
+.vscode

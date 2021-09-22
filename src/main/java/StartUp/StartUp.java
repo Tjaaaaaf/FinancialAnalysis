@@ -1,33 +1,8 @@
 package StartUp;
 
-import Services.DomeinController;
-import ScreenControllers.StartScreenController;
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-
-public class StartUp extends Application {
-
-    @Override
-    public void start(Stage stage) {
-        DomeinController domeincontroller = new DomeinController();
-
-        StartScreenController root = new StartScreenController(domeincontroller);
-
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/css/style.css").toString());
-
-        stage.setTitle("FinancialAnalysis");
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.setWidth(620);
-        stage.setHeight(500);
-        stage.show();
-
+public class StartUp {
+    public static void main(final String[] args) {
+        StartApplication app = new StartApplication();
+        app.main(args);
     }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-
 }

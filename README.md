@@ -1,9 +1,11 @@
 # FinancialAnalysis
 
-Uses java jdk 10
+Uses
+* java jdk 10
+* poi 4.2.2
+* javafx 17
+* javafx-fxml 17
 
-# TODO
+# how to build
 
-- [x] error-handling rework so that exceptions are not thrown every two seconds
-- [ ] decoupling of logic and frontend -> use service
-- [ ] redo flow of screens and gui (too many thight coupling now)
+Use the maven package commmand
