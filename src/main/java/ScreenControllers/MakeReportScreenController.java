@@ -219,6 +219,7 @@ public class MakeReportScreenController extends VBox {
                     .addBPOvergedragenWinstVerlies()
                     .addBPSchuldenHoogstens1Jaar()
                     .addRRBedrijfsopbrengsten()
+                    .addRRBedrijfsopbrengstenOmzet()
                     .addRRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva()
                     .addRRBedrijfsWinstVerlies()
                     .addRRWinstVerliesBoekjaar()
@@ -253,6 +254,8 @@ public class MakeReportScreenController extends VBox {
                     .addSBAantalBediendenOpEindeBoekjaar()
                     .addSBAantalArbeidersOpEindeBoekjaar()
                     .addBVBABrutomarge()
+                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen()
+                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename()
                     .build());
         });
     }
@@ -278,6 +281,7 @@ public class MakeReportScreenController extends VBox {
                     .addBPSchuldenMeer1JaarOverigeSchulden()
                     .addBPTotaalPassiva()
                     .addRRBedrijfsopbrengsten()
+                    .addRRBedrijfsopbrengstenOmzet()
                     .addRRBedrijfskosten()
                     .addRRWinstVerliesBoekjaar()
                     .addRRBedrijfskostenHandelsgoederenGrondHulpstoffen()
@@ -314,6 +318,8 @@ public class MakeReportScreenController extends VBox {
                     .addTLFVAAndereOndernemingenMutatiesTijdensBoekjaarAanschaffingen()
                     .addBAOndernemingenDeelnemingsverhoudingDeelnemingen()
                     .addBVBABrutomarge()
+                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen()
+                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename()
                     .build());
         });
     }
