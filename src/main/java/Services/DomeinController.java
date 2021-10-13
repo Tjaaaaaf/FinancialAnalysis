@@ -13,7 +13,7 @@ public class DomeinController {
     private final PersistenceController persistenceController;
 
     public DomeinController() {
-        this.persistenceController = new PersistenceController(this);
+        this.persistenceController = new PersistenceController();
     }
 
     public String addDocument(File file) {

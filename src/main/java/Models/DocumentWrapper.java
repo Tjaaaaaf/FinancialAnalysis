@@ -122,7 +122,6 @@ public class DocumentWrapper implements IDocumentWrapper {
                 index++;
             }
 
-            System.out.println(currentTimePeriods);
             return currentTimePeriods;
         }
 

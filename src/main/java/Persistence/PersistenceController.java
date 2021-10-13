@@ -1,7 +1,6 @@
 package Persistence;
 
 import Models.DocumentWrapper.DocumentBuilder;
-import Services.DomeinController;
 import Models.Interfaces.IDocumentBuilder;
 import javafx.collections.ObservableList;
 
@@ -10,11 +9,9 @@ import java.util.List;
 
 public class PersistenceController {
 
-    private final DomeinController domeinController;
     private final DocumentWrapperRepository documentRepository;
 
-    public PersistenceController(DomeinController domeincontroller) {
-        this.domeinController = domeincontroller;
+    public PersistenceController() {
         this.documentRepository = new DocumentWrapperRepository();
     }
 
