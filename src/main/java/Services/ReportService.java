@@ -29,6 +29,9 @@ public class ReportService {
     private HSSFCellStyle BoldBottomNumber;
     private HSSFCellStyle BoldTopNumber;
     private HSSFCellStyle Number;
+    private HSSFCellStyle GreyNumber;
+    private HSSFCellStyle RedNumber;
+    private HSSFCellStyle GreenNumber;
     private HSSFCellStyle BoldTopDouble;
     private HSSFCellStyle Grey;
     private HSSFCellStyle ProcentStyleBold;
@@ -59,241 +62,194 @@ public class ReportService {
         makeStyles();
     }
 
+    private <T> void addCell(int rowNumber, int cellNumber, CellType cellType, T value, HSSFCellStyle style) {
+        Row row;
+        if (report.getRow(rowNumber) == null) {
+            row = report.createRow(rowNumber);
+        } else {
+            row = report.getRow(rowNumber);
+        }
+
+        Cell cell;
+        if (cellType == null) {
+            cell = row.createCell(cellNumber);
+        } else {
+            cell = row.createCell(cellNumber, cellType);
+        }
+
+        if (value != null) {
+            if (value instanceof Integer) {
+                cell.setCellValue((Integer) value);
+            } else if (value instanceof Long) {
+                cell.setCellValue((Long) value);
+            } else if (value instanceof Double) {
+                cell.setCellValue((Double) value);
+            } else {
+                cell.setCellValue((String) value);
+            }
+        }
+
+        if (style != null)
+
+        {
+            cell.setCellStyle(style);
+        }
+    }
+
     public void createHistoriekReport() {
 
         int rowNumber = 1;
 
         // ROW2
-        Row row2 = report.createRow(rowNumber);
-        Cell cellName = row2.createCell(0);
-        cellName.setCellValue("NAAM");
-        cellName.setCellStyle(BoldBottomTop);
+        addCell(rowNumber, 0, null, "NAAM", BoldBottomTop);
+        // Row row2 = report.createRow(rowNumber);
+        // Cell cellName = row2.createCell(0);
+        // cellName.setCellValue("NAAM");
+        // cellName.setCellStyle(BoldBottomTop);
 
-        Cell cellPer = row2.createCell(1);
-        cellPer.setCellValue("PER");
-        cellPer.setCellStyle(BoldBottomTop);
+        addCell(rowNumber, 1, null, "PER", BoldBottomTop);
 
-        Cell cellDate = row2.createCell(2);
-        cellDate.setCellValue("31/12");
-        cellDate.setCellStyle(BoldBottomTop);
+        addCell(rowNumber, 2, null, "31/12", BoldBottomTop);
 
-        row2.createCell(documents.size() + 2).setCellStyle(BoldTop);
-        row2.createCell(documents.size() + 3).setCellStyle(BoldTop);
+        addCell(rowNumber, documents.size() + 2, null, null, BoldTop);
+        addCell(rowNumber, documents.size() + 3, null, null, BoldTop);
 
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp = row2.createCell(documents.size() + 4 + i);
-            temp.setCellValue(documents.get(i).getYear());
-            temp.setCellStyle(BoldGrey);
+            addCell(rowNumber, documents.size() + 4 + i, null, documents.get(i).getYear(), BoldGrey);
         }
 
         rowNumber++;
 
         // ROW3
-        Row row3 = report.createRow(rowNumber);
-        Cell cellCompany = row3.createCell(0);
-        cellCompany.setCellValue(
-                documents.get(0).getBusiness().getName() + (style.equals(ReportStyle.HISTORIEKNV) ? " NV" : " BVBA"));
-        cellCompany.setCellStyle(BoldGreenCenter);
-        Cell temp = row3.createCell(2 + documents.size());
-        temp.setCellValue("CORE NETTO WERK KAPITAAL");
-        temp.setCellStyle(Bold);
-        Cell temp2 = row3.createCell(3 + documents.size());
-        temp2.setCellValue("voorraden+vorderingen-leveranciers");
+        addCell(rowNumber, 0, null,
+                documents.get(0).getBusiness().getName() + (style.equals(ReportStyle.HISTORIEKNV) ? " NV" : " BVBA"),
+                BoldGreenCenter);
+
+        addCell(rowNumber, documents.size() + 2, null, "CORE NETTO WERK KAPITAAL", Bold);
+        addCell(rowNumber, documents.size() + 3, null, "voorraden+vorderingen-leveranciers", null);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp3 = row3.createCell(documents.size() + 4 + i, CellType.NUMERIC);
-            temp3.setCellValue(Math.round(getCoreNettoWerkKapitaal(i)));
-            temp3.setCellStyle(BoldNumber);
+            addCell(rowNumber, documents.size() + 4 + i, CellType.NUMERIC, Math.round(getCoreNettoWerkKapitaal(i)),
+                    BoldNumber);
         }
 
         rowNumber += 2;
 
         // ROW5
-        Row row5 = report.createRow(rowNumber);
-        Cell temp4 = row5.createCell(2 + documents.size());
-        temp4.setCellValue("CAPITAL EMPLOYED");
-        temp4.setCellStyle(BoldBottom);
-        Cell temp5 = row5.createCell(3 + documents.size());
-        temp5.setCellValue("netto werkkapitaal+vaste activa");
-        temp5.setCellStyle(BottomNormal);
+        addCell(rowNumber, documents.size() + 2, null, "CAPITAL EMPLOYED", BoldBottom);
+        addCell(rowNumber, documents.size() + 3, null, "netto werkkapitaal+vaste activa", BottomNormal);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp6 = row5.createCell(documents.size() + 4 + i, CellType.NUMERIC);
-            temp6.setCellValue(Math.round(getCapitalEmployed(i)));
-            temp6.setCellStyle(BoldBottomNumber);
+            addCell(rowNumber, documents.size() + 4 + i, CellType.NUMERIC, Math.round(getCapitalEmployed(i)),
+                    BoldBottomNumber);
         }
 
         rowNumber++;
 
         // ROW6
-        Row row6 = report.createRow(rowNumber);
-        Cell temp7 = row6.createCell(0);
-        temp7.setCellValue("BALANS ACTIVA");
-        temp7.setCellStyle(BoldGrey);
+        addCell(rowNumber, 0, null, "BALANS ACTIVA", BoldGrey);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp9 = row6.createCell(i + 1);
-            temp9.setCellValue(documents.get(i).getYear());
-            temp9.setCellStyle(BoldGrey);
+            addCell(rowNumber, i + 1, null, documents.get(i).getYear(), BoldGrey);
         }
 
         rowNumber++;
 
         // ROW7
-        Row row7 = report.createRow(rowNumber);
-        Cell temp10 = row7.createCell(2 + documents.size());
-        temp10.setCellValue("EBIT MARGE");
-        if (style.equals(ReportStyle.HISTORIEKNV)) {
-            temp10.setCellStyle(BoldTop);
-        } else {
-            temp10.setCellStyle(Grey);
-        }
-        Cell temp11 = row7.createCell(3 + documents.size());
-        temp11.setCellValue("EBIT");
-        if (style.equals(ReportStyle.HISTORIEKNV)) {
-            temp11.setCellStyle(BoldBottomTop);
-        } else {
-            temp11.setCellStyle(Grey);
-        }
+        addCell(rowNumber, documents.size() + 2, null, "EBIT MARGE",
+                style.equals(ReportStyle.HISTORIEKNV) ? BoldTop : Grey);
+
+        addCell(rowNumber, documents.size() + 3, null, "EBIT",
+                style.equals(ReportStyle.HISTORIEKNV) ? BoldBottomTop : Grey);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp12 = row7.createCell(documents.size() + 4 + i);
-            if (style.equals(ReportStyle.HISTORIEKNV)) {
-                temp12.setCellValue(getEBIT(i) / getBedrijfsOpbrengsten(i));
-                temp12.setCellStyle(ProcentStyleBold);
-            } else {
-                temp12.setCellValue("/");
-                temp12.setCellStyle(Grey);
-            }
+            addCell(rowNumber, documents.size() + 4 + i, null,
+                    style.equals(ReportStyle.HISTORIEKNV) ? getEBIT(i) / getBedrijfsOpbrengsten(i) : "/",
+                    style.equals(ReportStyle.HISTORIEKNV) ? ProcentStyleBold : Grey);
         }
 
         rowNumber++;
 
         // ROW8
-        Row row8 = report.createRow(rowNumber);
-        Cell temp13 = row8.createCell(0);
-        temp13.setCellValue("VASTE ACTIVA");
-        temp13.setCellStyle(BoldYellow);
+        addCell(rowNumber, 0, null, "VASTE ACTIVA", BoldYellow);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp15 = row8.createCell(i + 1, CellType.NUMERIC);
-            temp15.setCellValue(Math.round(getVasteActiva(i)));
-            temp15.setCellStyle(BoldYellowNumber);
+            addCell(rowNumber, i + 1, CellType.NUMERIC, Math.round(getVasteActiva(i)), BoldYellowNumber);
         }
-        Cell temp16 = row8.createCell(3 + documents.size());
-        temp16.setCellValue("OMZET");
-        if (style.equals(ReportStyle.HISTORIEKNV)) {
-            temp16.setCellStyle(Bold);
-        } else {
-            temp16.setCellStyle(Grey);
-        }
+
+        addCell(rowNumber, documents.size() + 3, null, "Omzet", style.equals(ReportStyle.HISTORIEKNV) ? Bold : Grey);
 
         rowNumber++;
 
         // ROW9
-        Row row9 = report.createRow(rowNumber);
-        Cell temp17 = row9.createCell(0);
-        temp17.setCellValue("IMMATERIELE (evt. Goodwill)");
-        temp17.setCellStyle(Bold);
+        addCell(rowNumber, 0, null, "IMMATERIELE (evt. Goodwill)", Bold);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp18 = row9.createCell(i + 1, CellType.NUMERIC);
-            temp18.setCellValue(Math.round(Double
-                    .parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BAImmaterieleVasteActiva))));
-            temp18.setCellStyle(BoldNumber);
+            addCell(rowNumber, i + 1, CellType.NUMERIC, Math.round(Double
+                    .parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BAImmaterieleVasteActiva))),
+                    BoldNumber);
         }
 
         rowNumber++;
 
-        Row row10 = report.createRow(rowNumber);
-        Cell temp19 = row10.createCell(0);
-        temp19.setCellValue("MATERIELE");
-        temp19.setCellStyle(Bold);
+        addCell(rowNumber, 0, null, "MATERIELE", Bold);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp20 = row10.createCell(i + 1, CellType.NUMERIC);
-            temp20.setCellValue(Math.round(
-                    Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BAMaterieleVasteActiva))));
-            temp20.setCellStyle(BoldNumber);
+            addCell(rowNumber, i + 1, CellType.NUMERIC, Math.round(
+                    Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BAMaterieleVasteActiva))),
+                    BoldNumber);
         }
-        Cell temp21 = row10.createCell(2 + documents.size());
-        temp21.setCellValue("EBITDA MARGE");
-        if (style.equals(ReportStyle.HISTORIEKNV)) {
-            temp21.setCellStyle(Bold);
-        } else {
-            temp21.setCellStyle(Grey);
-        }
-        Cell temp22 = row10.createCell(3 + documents.size());
-        temp22.setCellValue("EBITDA");
-        if (style.equals(ReportStyle.HISTORIEKNV)) {
-            temp22.setCellStyle(BoldBottom);
-        } else {
-            temp22.setCellStyle(Grey);
-        }
+
+        addCell(rowNumber, documents.size() + 2, null, "EBITDA MARGE",
+                style.equals(ReportStyle.HISTORIEKNV) ? Bold : Grey);
+
+        addCell(rowNumber, documents.size() + 3, null, "EBITDA",
+                style.equals(ReportStyle.HISTORIEKNV) ? BoldBottom : Grey);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp23 = row10.createCell(documents.size() + 4 + i);
-            if (style.equals(ReportStyle.HISTORIEKNV)) {
-                temp23.setCellValue(getEBITDA(i) / getBedrijfsOpbrengsten(i));
-                temp23.setCellStyle(ProcentStyleBold);
-            } else {
-                temp23.setCellValue("/");
-                temp23.setCellStyle(Grey);
-            }
+            addCell(rowNumber, documents.size() + 4 + i, null,
+                    style.equals(ReportStyle.HISTORIEKNV) ? getEBITDA(i) / getBedrijfsOpbrengsten(i) : "/",
+                    style.equals(ReportStyle.HISTORIEKNV) ? ProcentStyleBold : Grey);
         }
 
         rowNumber++;
 
-        Row row11 = report.createRow(rowNumber);
-        Cell temp24 = row11.createCell(0);
-        temp24.setCellValue("FINANCIELE");
-        temp24.setCellStyle(Bold);
+        addCell(rowNumber, 0, null, "FINANCIELE", Bold);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp25 = row11.createCell(i + 1, CellType.NUMERIC);
-            temp25.setCellValue(Math.round(
-                    Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BAFinancieleVasteActiva))));
-            temp25.setCellStyle(BoldNumber);
+            addCell(rowNumber, i + 1, CellType.NUMERIC, Math.round(
+                    Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BAFinancieleVasteActiva))),
+                    BoldNumber);
         }
-        Cell temp26 = row11.createCell(2 + documents.size());
-        temp26.setCellValue("> 12-15%");
-        if (style.equals(ReportStyle.HISTORIEKNV)) {
-            temp26.setCellStyle(Bold);
-        } else {
-            temp26.setCellStyle(Grey);
-        }
-        Cell temp27 = row11.createCell(3 + documents.size());
-        temp27.setCellValue("OMZET");
-        if (style.equals(ReportStyle.HISTORIEKNV)) {
-            temp27.setCellStyle(Bold);
-        } else {
-            temp27.setCellStyle(Grey);
+
+        addCell(rowNumber, documents.size() + 2, null, "> 12-15%", style.equals(ReportStyle.HISTORIEKNV) ? Bold : Grey);
+
+        addCell(rowNumber, documents.size() + 3, null, "OMZET", style.equals(ReportStyle.HISTORIEKNV) ? Bold : Grey);
+
+        rowNumber++;
+
+        addCell(rowNumber, 0, null, "VLOTTENDE ACTIVA", BoldYellow);
+
+        for (int i = 0; i < documents.size(); i++) {
+            addCell(rowNumber, i + 1, CellType.NUMERIC, Math.round(getVlottendeActiva(i)), BoldYellowNumber);
         }
 
         rowNumber++;
 
-        Row row12 = report.createRow(rowNumber);
-        Cell temp28 = row12.createCell(0);
-        temp28.setCellValue("VLOTTENDE ACTIVA");
-        temp28.setCellStyle(BoldYellow);
+        addCell(rowNumber, 0, null, "VOORRADEN", Bold);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp29 = row12.createCell(i + 1, CellType.NUMERIC);
-            temp29.setCellValue(Math.round(getVlottendeActiva(i)));
-            temp29.setCellStyle(BoldYellowNumber);
+            addCell(rowNumber, i + 1, CellType.NUMERIC, Math.round(getVoorradenEnBestellingenInUitvoering(i)),
+                    BoldNumber);
         }
 
-        rowNumber++;
+        addCell(rowNumber, documents.size() + 2, null, "RENDEMENT EIGEN", Bold);
 
-        Row row13 = report.createRow(rowNumber);
-        Cell temp30 = row13.createCell(0);
-        temp30.setCellValue("VOORRADEN");
-        temp30.setCellStyle(Bold);
+        addCell(rowNumber, documents.size() + 3, null, "NETTO WINST", BoldBottom);
+
         for (int i = 0; i < documents.size(); i++) {
-            Cell temp31 = row13.createCell(i + 1, CellType.NUMERIC);
-            temp31.setCellValue(Math.round(getVoorraden(i)));
-            temp31.setCellStyle(BoldNumber);
-        }
-        Cell temp32 = row13.createCell(2 + documents.size());
-        temp32.setCellValue("RENDEMENT EIGEN");
-        temp32.setCellStyle(Bold);
-        Cell temp33 = row13.createCell(3 + documents.size());
-        temp33.setCellValue("NETTO WINST");
-        temp33.setCellStyle(BoldBottom);
-        for (int i = 0; i < documents.size(); i++) {
-            Cell temp34 = row13.createCell(documents.size() + 4 + i);
-            temp34.setCellValue(getWinstVerliesBoekjaar(i) / getEigenVermogen(i));
-            temp34.setCellStyle(ProcentStyleBold);
+            addCell(rowNumber, documents.size() + 4 + i, null, getWinstVerliesBoekjaar(i) / getEigenVermogen(i),
+                    ProcentStyleBold);
         }
 
         rowNumber++;
@@ -903,7 +859,8 @@ public class ReportService {
         temp125.setCellStyle(BoldBottom);
         for (int i = 0; i < documents.size(); i++) {
             Cell temp126 = rowBrutoMarge.createCell(documents.size() + 4 + i, CellType.NUMERIC);
-            temp126.setCellValue((getVlottendeActiva(i) - getVoorraden(i)) / getKorteTermijnSchulden(i));
+            temp126.setCellValue(
+                    (getVlottendeActiva(i) - getVoorradenEnBestellingenInUitvoering(i)) / getKorteTermijnSchulden(i));
             temp126.setCellStyle(DoubleStyleBold);
         }
 
@@ -1377,6 +1334,20 @@ public class ReportService {
 
         rowNumber++;
 
+        addCell(rowNumber, 1, null, "voorraden en bestellingen in uitvoering", null);
+        for (int i = 0; i < documents.size(); i++) {
+            addCell(rowNumber, i + 3, CellType.NUMERIC, Math.round(getVoorradenEnBestellingenInUitvoering(i)), Number);
+        }
+
+        rowNumber++;
+
+        addCell(rowNumber, 1, null, "handelsvorderingen", null);
+        for (int i = 0; i < documents.size(); i++) {
+            addCell(rowNumber, i + 3, CellType.NUMERIC, Math.round(getHandelsvorderingen(i)), Number);
+        }
+
+        rowNumber++;
+
         // ROW5
         Row row5 = report.createRow(rowNumber);
         row5.createCell(1).setCellValue("liquide middelen");
@@ -1437,12 +1408,27 @@ public class ReportService {
 
         rowNumber++;
 
+        addCell(rowNumber, 1, null, "totale schulden", null);
+        for (int i = 0; i < documents.size(); i++) {
+            addCell(rowNumber, i + 3, CellType.NUMERIC, Math.round(getTotaleSchulden(i)), Number);
+        }
+
+        rowNumber++;
+
         Row row11 = report.createRow(rowNumber);
         row11.createCell(1).setCellValue("schulden op korte termijn");
         for (int i = 0; i < documents.size(); i++) {
             Cell tempSKT = row11.createCell(i + 3, CellType.NUMERIC);
             tempSKT.setCellValue(Math.round(getKorteTermijnSchulden(i)));
             tempSKT.setCellStyle(Number);
+        }
+
+        rowNumber++;
+
+        addCell(rowNumber, 1, null, "Leveranciersschulden", null);
+
+        for (int i = 0; i < documents.size(); i++) {
+            addCell(rowNumber, i + 3, CellType.NUMERIC, Math.round(getLeveranciers(i)), Number);
         }
 
         rowNumber++;
@@ -1635,6 +1621,34 @@ public class ReportService {
 
         rowNumber++;
 
+        addCell(rowNumber, 1, null, "netto werkkapitaal", null);
+        for (int i = 0; i < documents.size(); i++) {
+            addCell(rowNumber, i + 3, CellType.NUMERIC,
+                    Math.round(
+                            getNettoWerkkapitaal(i)),
+                    Number);
+        }
+
+        rowNumber += 2;
+
+        addCell(rowNumber, 1, null, "Z score Altman", null);
+
+        for (int i = 0; i < documents.size(); i++) {
+            HSSFCellStyle style;
+            if (Math.round(getZScoreAltman(i)) > 2.99) {
+                style = GreenNumber;
+            } else {
+                if (Math.round(getZScoreAltman(i)) < 1.23) {
+                    style = RedNumber;
+                } else {
+                    style = GreyNumber;
+                }
+            }
+            addCell(rowNumber, i + 3, CellType.NUMERIC, getZScoreAltman(i), style);
+        }
+
+        rowNumber++;
+
         Row row25 = report.createRow(rowNumber);
         row25.createCell(0).setCellValue("PERSONEEL");
 
@@ -1789,7 +1803,8 @@ public class ReportService {
                 tempSKT.setCellStyle(Grey);
             } else {
                 tempSKT.setCellValue(
-                        getBedrijfsOpbrengstenOmzet(i) / (getGepresteerdeUrenUitzendkrachten(i) + getGepresteerdeUren(i)));
+                        getBedrijfsOpbrengstenOmzet(i)
+                                / (getGepresteerdeUrenUitzendkrachten(i) + getGepresteerdeUren(i)));
                 tempSKT.setCellStyle(DoubleStyle);
             }
         }
@@ -1972,6 +1987,21 @@ public class ReportService {
         Number = workbook.createCellStyle();
         Number.setDataFormat(numberFormatter.getFormat("### ### ##0"));
 
+        GreyNumber = workbook.createCellStyle();
+        GreyNumber.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+        GreyNumber.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        GreyNumber.setDataFormat(workbook.createDataFormat().getFormat("0.00"));
+
+        RedNumber = workbook.createCellStyle();
+        RedNumber.setFillForegroundColor(IndexedColors.RED.getIndex());
+        RedNumber.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        RedNumber.setDataFormat(workbook.createDataFormat().getFormat("0.00"));
+
+        GreenNumber = workbook.createCellStyle();
+        GreenNumber.setFillForegroundColor(IndexedColors.SEA_GREEN.getIndex());
+        GreenNumber.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        GreenNumber.setDataFormat(workbook.createDataFormat().getFormat("0.00"));
+
         BoldTopDouble = workbook.createCellStyle();
         BoldTopDouble.setFont(fontBold);
         BoldTopDouble.setBorderTop(BorderStyle.THIN);
@@ -2113,7 +2143,7 @@ public class ReportService {
     }
 
     private double getVoorraadrotatie(int index) {
-        return getVoorraden(index) / getBedrijfsOpbrengsten(index) * 365;
+        return getVoorradenEnBestellingenInUitvoering(index) / getBedrijfsOpbrengsten(index) * 365;
     }
 
     private double getKlantenKrediet(int index) {
@@ -2246,11 +2276,6 @@ public class ReportService {
                 .get(PropertyName.BAVorderingenHoogstens1JaarHandelsvorderingen));
     }
 
-    private double getVoorraden(int index) {
-        return Double.parseDouble(
-                documents.get(index).getPropertiesMap().get(PropertyName.BAVoorradenBestellingenUitvoering));
-    }
-
     private double getResultaatVoorBelastingen(int index) {
         return getEBITDA(index) - getAfschrijvingen(index) - getWaardeVermindering(index)
                 + getFinancieleResultaten(index) + getUitzonderlijkeResultaten(index);
@@ -2313,7 +2338,7 @@ public class ReportService {
     }
 
     private double getCoreNettoWerkKapitaal(int index) {
-        return getVoorraden(index) + getHandelsvorderingen(index) - getLeveranciers(index);
+        return getVoorradenEnBestellingenInUitvoering(index) + getHandelsvorderingen(index) - getLeveranciers(index);
     }
 
     private double getCapitalEmployed(int index) {
@@ -2358,5 +2383,28 @@ public class ReportService {
                 + Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BPOverlopendeRekeningen))
                 - getLeveranciers(i) - Double.parseDouble(documents.get(i).getPropertiesMap()
                         .get(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchulden));
+    }
+
+    private double getVoorradenEnBestellingenInUitvoering(int i) {
+        return Double.parseDouble(documents.get(i).getPropertiesMap()
+                .get(PropertyName.BAVoorradenBestellingenUitvoering));
+    }
+
+    private double getTotaleSchulden(int i) {
+        return Double.parseDouble(documents.get(i).getPropertiesMap().get(PropertyName.BPSchulden));
+    }
+
+    private double getNettoWerkkapitaal(int i) {
+        return getVoorradenEnBestellingenInUitvoering(i) + getHandelsvorderingen(i) - getLeveranciers(i);
+    }
+
+    private double getZScoreAltman(int i) {
+        double x1 = getNettoWerkkapitaal(i) / getTotaleActiva(i) * 0.717;
+        double x2 = getWinstVerliesBoekjaar(i) / getTotaleActiva(i) * 0.847;
+        double x3 = getEBIT(i) / getTotaleActiva(i) * 3.107;
+        double x4 = getEigenVermogen(i) / getTotaleSchulden(i) * 0.42;
+        double x5 = getBedrijfsOpbrengstenOmzet(i) / getTotaleActiva(i) * 0.998;
+
+        return x1 + x2 + x3 + x4 + x5;
     }
 }

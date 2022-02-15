@@ -66,7 +66,7 @@ public enum PropertyName {
     BPVoorzieningenRisicosKostenGroteHerstellingsOnderhoudswerken,
     BPVoorzieningenRisicosKostenMilieuverplichtingen,
     BPVoorzieningenRisicosKostenOverige,
-    BPUitgesteldeBelastingen,
+    BPSchulden,
     BPSchuldenMeer1Jaar,
     BPSchuldenMeer1JaarFinancieleSchulden,
     BPSchuldenMeer1JaarFinancieleSchuldenAchtergesteldeLeningen,

@@ -54,6 +54,10 @@
     -fx-text-fill: #d0dff2;
 }
 
+.text-input:hover{
+    -fx-cursor: text;
+}
+
 .alert{
     -fx-background-color: #0F2940;
 }
@@ -96,28 +100,35 @@
 
 .backButton:hover {
     -fx-effect: dropshadow( three-pass-box, #d0dff2, 10.0, 0.0, 0.0, 0.0);
+    -fx-cursor: hand;
 }
 
 .nextButton:hover {
     -fx-effect: dropshadow( three-pass-box, #38A673, 10.0, 0.0, 0.0, 0.0);
+    -fx-cursor: hand;
 }
 
 .choiceBox:hover {
     -fx-effect: dropshadow( three-pass-box, #061726, 10.0, 0.0, 0.0, 0.0);
+    -fx-cursor: hand;
 }
 
 .addButton:hover {
     -fx-effect: dropshadow( three-pass-box, #061726, 10.0, 0.0, 0.0, 0.0);
+    -fx-cursor: hand;
 }
 
 .chooseButton:hover {
     -fx-effect: dropshadow( three-pass-box, #061726, 10.0, 0.0, 0.0, 0.0);
+    -fx-cursor: hand;
 }
 
 .locationTextfield:hover {
     -fx-effect: dropshadow( three-pass-box, #061726, 10.0, 0.0, 0.0, 0.0);
+    -fx-cursor: text;
 }
 
 .deleteButton:hover {
     -fx-effect: dropshadow( three-pass-box, #dd2a2a, 10.0, 0.0, 0.0, 0.0);
+    -fx-cursor: hand;
 }

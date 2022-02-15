@@ -163,7 +163,7 @@ public interface IDocumentBuilder {
 
     IDocumentBuilder addBPVoorzieningenRisicosKostenOverige();
 
-    IDocumentBuilder addBPUitgesteldeBelastingen();
+    IDocumentBuilder addBPSchulden();
 
     IDocumentBuilder addBPSchuldenMeer1Jaar();
 

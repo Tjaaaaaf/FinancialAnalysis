@@ -32,7 +32,7 @@ import java.util.List;
 
 public class MakeReportScreenController extends VBox {
 
-    //region Properties
+    // region Properties
     private final DomeinController domeinController;
     private final DirectoryChooser directoryChooser;
     private final StartScreenController startScreenController;
@@ -43,9 +43,9 @@ public class MakeReportScreenController extends VBox {
     private File directoryFile;
     private HSSFSheet report;
     private XmlUtil xmlUtil = new XmlUtil();
-    //endregion
+    // endregion
 
-    //region FXMLProperties
+    // region FXMLProperties
     @FXML
     private TextField tfLocation;
     @FXML
@@ -56,10 +56,11 @@ public class MakeReportScreenController extends VBox {
     private Button btnBack;
     @FXML
     private Button btnMake;
-    //endregion
+    // endregion
 
-    //region Constructor
-    public MakeReportScreenController(DomeinController domeinController, StartScreenController startScreenController, ReportStyle style, SettingsScreenController settingsScreenController) {
+    // region Constructor
+    public MakeReportScreenController(DomeinController domeinController, StartScreenController startScreenController,
+            ReportStyle style, SettingsScreenController settingsScreenController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MakeReportScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
@@ -79,9 +80,9 @@ public class MakeReportScreenController extends VBox {
 
         buildGui();
     }
-    //endregion
+    // endregion
 
-    //region BuildGUI
+    // region BuildGUI
     private void buildGui() {
         String defaultSource = xmlUtil.getStringFromPreferences("defaultSource");
         if (defaultSource != null) {
@@ -92,9 +93,9 @@ public class MakeReportScreenController extends VBox {
             tfLocation.setText("");
         }
     }
-    //endregion
+    // endregion
 
-    //region FXMLFunctions
+    // region FXMLFunctions
     @FXML
     private void back(ActionEvent event) {
         startScreenController.setCenter(settingsScreenController);
@@ -120,9 +121,11 @@ public class MakeReportScreenController extends VBox {
             report = workbook.createSheet(tfName.getText());
             error = writeReport();
             if (error != null)
-                AlertService.showAlert(error.key, error.key, error.message, this.getScene().getWindow(), AlertType.ERROR);
+                AlertService.showAlert(error.key, error.key, error.message, this.getScene().getWindow(),
+                        AlertType.ERROR);
             else {
-                startScreenController.setCenter(new DocumentManagementScreenController(domeinController, startScreenController));
+                startScreenController
+                        .setCenter(new DocumentManagementScreenController(domeinController, startScreenController));
                 startScreenController.switchColorSaveStep();
                 startScreenController.switchColorDocumentStep();
             }
@@ -145,7 +148,9 @@ public class MakeReportScreenController extends VBox {
         }
         File alreadyExists = new File(test.getPath() + String.format("\\%s.xls", tfName.getText()));
         if (alreadyExists.exists()) {
-            return new ErrorObject("Verkeerde input", String.format("Er bestaat al een overzicht met de naam \"%s\" op de locatie \"%s\".", tfName.getText(), tfLocation.getText()));
+            return new ErrorObject("Verkeerde input",
+                    String.format("Er bestaat al een overzicht met de naam \"%s\" op de locatie \"%s\".",
+                            tfName.getText(), tfLocation.getText()));
         }
         return null;
     }
@@ -156,9 +161,9 @@ public class MakeReportScreenController extends VBox {
             makeSheet(new ActionEvent());
         }
     }
-    //endregion
+    // endregion
 
-    //region Functions
+    // region Functions
     private ErrorObject writeReport() {
         try {
             String slash = System.getProperty("os.name").startsWith("Windows") ? "\\" : "/";
@@ -172,7 +177,8 @@ public class MakeReportScreenController extends VBox {
             }
             workbook.close();
 
-            AlertService.showAlert("Aanmaken gelukt", "Aanmaken excel bestand gelukt.", "Bestand is aangemaakt.", this.getScene().getWindow(), AlertType.INFORMATION);
+            AlertService.showAlert("Aanmaken gelukt", "Aanmaken excel bestand gelukt.", "Bestand is aangemaakt.",
+                    this.getScene().getWindow(), AlertType.INFORMATION);
         } catch (FileNotFoundException ex) {
             return new ErrorObject("Verkeerde input", "Het pad klopt niet");
         } catch (IOException ex) {
@@ -183,7 +189,8 @@ public class MakeReportScreenController extends VBox {
 
     private void createReport() {
 
-        ReportService reportService = new ReportService(workbook, report, documents, style, workbook.createDataFormat());
+        ReportService reportService = new ReportService(workbook, report, documents, style,
+                workbook.createDataFormat());
 
         if (!style.equals(ReportStyle.VERGELIJKINGNV) && !style.equals(ReportStyle.VERGELIJKINGBVBA)) {
             reportService.createHistoriekReport();
@@ -256,6 +263,7 @@ public class MakeReportScreenController extends VBox {
                     .addBVBABrutomarge()
                     .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen()
                     .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename()
+                    .addBPSchulden()
                     .build());
         });
     }
@@ -323,5 +331,5 @@ public class MakeReportScreenController extends VBox {
                     .build());
         });
     }
-    //endregion
+    // endregion
 }

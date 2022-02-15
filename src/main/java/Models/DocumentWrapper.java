@@ -611,8 +611,8 @@ public class DocumentWrapper implements IDocumentWrapper {
         }
 
         @Override
-        public IDocumentBuilder addBPUitgesteldeBelastingen() {
-            properties.replace(PropertyName.BPUitgesteldeBelastingen, getStringFromXBRL("AmountsPayable"));
+        public IDocumentBuilder addBPSchulden() {
+            properties.replace(PropertyName.BPSchulden, getStringFromXBRL("AmountsPayable"));
             return this;
         }
 
@@ -667,7 +667,7 @@ public class DocumentWrapper implements IDocumentWrapper {
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarHandelsschulden() {
             properties.replace(PropertyName.BPSchuldenMeer1JaarHandelsschulden,
-                    getStringFromXBRL("TradeDebtsPayableWithinOneYear"));
+                    getStringFromXBRL("TradeDebtsPayableMoreOneYear"));
             return this;
         }
 
