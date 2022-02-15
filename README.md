@@ -8,4 +8,4 @@ Uses
 
 # how to build
 
-Use the maven package commmand
+Use the maven package command
