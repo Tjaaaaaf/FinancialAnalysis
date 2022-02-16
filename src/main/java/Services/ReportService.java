@@ -1534,7 +1534,7 @@ public class ReportService {
         rowNumber++;
 
         Row row20 = report.createRow(rowNumber);
-        row20.createCell(1).setCellValue("liquiditeitsratio: vlottende activa/schulden op korte termijn");
+        row20.createCell(1).setCellValue("liquiditeitsratio: vlottende activa/schulden op korte termijn (>1)");
         for (int i = 0; i < documents.size(); i++) {
             Cell tempSKT = row20.createCell(i + 3, CellType.NUMERIC);
             tempSKT.setCellValue(getVlottendeActiva(i) / getKorteTermijnSchulden(i));
@@ -1621,7 +1621,7 @@ public class ReportService {
 
         rowNumber++;
 
-        addCell(rowNumber, 1, null, "netto werkkapitaal", null);
+        addCell(rowNumber, 1, null, "netto werkkapitaal (voorraden + vorderingen - leveranciers)", null);
         for (int i = 0; i < documents.size(); i++) {
             addCell(rowNumber, i + 3, CellType.NUMERIC,
                     Math.round(
@@ -1631,14 +1631,14 @@ public class ReportService {
 
         rowNumber += 2;
 
-        addCell(rowNumber, 1, null, "Z score Altman", null);
+        addCell(rowNumber, 1, null, "Z score Altman (1,80 > < 2,99)", null);
 
         for (int i = 0; i < documents.size(); i++) {
             HSSFCellStyle style;
-            if (Math.round(getZScoreAltman(i)) > 2.99) {
+            if (getZScoreAltman(i) >= 2.99) {
                 style = GreenNumber;
             } else {
-                if (Math.round(getZScoreAltman(i)) < 1.23) {
+                if (getZScoreAltman(i) <= 1.80) {
                     style = RedNumber;
                 } else {
                     style = GreyNumber;
