@@ -1,13 +1,13 @@
 package ScreenControllers;
 
+import Models.Enums.FileExtension;
+import Models.Interfaces.IDocumentBuilder;
 import Services.AlertService;
-import Models.DocumentWrapper.DocumentBuilder;
 import Models.ErrorObject;
 import Services.DomeinController;
 import Util.XmlUtil;
 import javafx.scene.control.Alert.AlertType;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
@@ -21,6 +21,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +36,7 @@ public class DocumentManagementScreenController extends VBox {
     private final DomeinController domeincontroller;
     private final FileChooser fileChooser;
     private final StartScreenController startScreenController;
-    private SortedList<DocumentBuilder> sortedBuilders = new SortedList<>(FXCollections.observableArrayList());
-    private final Comparator<DocumentBuilder> builderSorter = (builder1, builder2) -> builder1.getNameProperty().get().compareToIgnoreCase(builder2.getNameProperty().get());
+    private final Comparator<IDocumentBuilder> builderSorter = (builder1, builder2) -> builder1.getNameProperty().get().compareToIgnoreCase(builder2.getNameProperty().get());
     private final XmlUtil xmlUtil = new XmlUtil();
     private SettingsScreenController next;
     //endregion
@@ -51,13 +51,13 @@ public class DocumentManagementScreenController extends VBox {
     @FXML
     private VBox vbScherm;
     @FXML
-    private TableView<DocumentBuilder> tvBestandenLijst;
+    private TableView<IDocumentBuilder> tvBestandenLijst;
     @FXML
-    private TableColumn<DocumentBuilder, String> tcName;
+    private TableColumn<IDocumentBuilder, String> tcName;
     @FXML
-    private TableColumn<DocumentBuilder, Boolean> tcSelect;
+    private TableColumn<IDocumentBuilder, Boolean> tcSelect;
     @FXML
-    private TableColumn<DocumentBuilder, DocumentBuilder> tcDelete;
+    private TableColumn<IDocumentBuilder, IDocumentBuilder> tcDelete;
     //endregion
 
     //region Constructor
@@ -128,19 +128,22 @@ public class DocumentManagementScreenController extends VBox {
     //region Functions
     private ErrorObject selectFiles() {
         setDefaultOrigin();
-        List<File> newFiles = fileChooser.showOpenMultipleDialog(Stage.getWindows().filtered(window -> window.isShowing()).get(0));
+        List<File> newFiles = fileChooser.showOpenMultipleDialog(Stage.getWindows().filtered(Window::isShowing).get(0));
         if (newFiles != null) {
             setOriginPreference(newFiles.get(0));
             for (File file : newFiles) {
                 String name = file.getName();
+                String fileExtensionString = name.substring(name.lastIndexOf("."));
 
-                if (!name.substring(name.lastIndexOf(".")).equals(".xbrl")) {
+                if (!fileExtensionString.equals(".xbrl") && !fileExtensionString.equals(".csv")) {
                     return new ErrorObject("Fout bestandstype", "Het gekozen bestand is van een verkeerd bestandstype. Gelieve een bestand met extensie \".xbrl\" te selecteren.");
                 }
 
-                String addedName = domeincontroller.addDocument(file);
-                if (addedName == null) {
-                    return new ErrorObject("Duplicaat bestand", "Het gekozen bestand is al geselecteerd.");
+                FileExtension fileExtension = name.substring(name.lastIndexOf(".")).equals(".xbrl") ? FileExtension.XBRL : FileExtension.CSV;
+
+                ErrorObject documentAdded = domeincontroller.addDocument(file, fileExtension);
+                if (documentAdded != null) {
+                    return documentAdded;
                 }
             }
             fillTable();
@@ -149,9 +152,10 @@ public class DocumentManagementScreenController extends VBox {
     }
 
     private void configureFileChooser() {
-        fileChooser.setTitle("Select xbrl file");
+        fileChooser.setTitle("Kies XBRL of CSV file");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("XBRL", "*.xbrl")
+                new FileChooser.ExtensionFilter("XBRL", "*.xbrl"),
+                new FileChooser.ExtensionFilter("CSV", "*.csv")
         );
     }
 
@@ -165,21 +169,18 @@ public class DocumentManagementScreenController extends VBox {
 
     private void setOriginPreference(File file) {
         String path = file.getPath();
-        int indexOflastSlash = 0;
 
         String slash = System.getProperty("os.name").startsWith("Windows") ? "\\" : "/";
-
-        indexOflastSlash = path.lastIndexOf(slash);
-        String directoryPath = path.substring(0, indexOflastSlash);
+        String directoryPath = path.substring(0, path.lastIndexOf(slash));
         xmlUtil.setStringFromPreferences("defaultOrigin", directoryPath);
     }
 
-    private TableCell<DocumentBuilder, DocumentBuilder> fillDeleteButtonTableCells() {
-        TableCell<DocumentBuilder, DocumentBuilder> temp = new TableCell<>() {
+    private TableCell<IDocumentBuilder, IDocumentBuilder> fillDeleteButtonTableCells() {
+        TableCell<IDocumentBuilder, IDocumentBuilder> temp = new TableCell<>() {
             private final Button btnDelete = new Button("x");
 
             @Override
-            protected void updateItem(DocumentBuilder documentbuilder, boolean empty) {
+            protected void updateItem(IDocumentBuilder documentbuilder, boolean empty) {
                 super.updateItem(documentbuilder, empty);
 
                 if (documentbuilder == null) {
@@ -205,7 +206,7 @@ public class DocumentManagementScreenController extends VBox {
     }
 
     private void fillTable() {
-        sortedBuilders = new SortedList<>(domeincontroller.getActiveDocumentBuilders(), builderSorter);
+        SortedList<IDocumentBuilder> sortedBuilders = new SortedList<IDocumentBuilder>(domeincontroller.getActiveDocumentBuilders(), builderSorter);
         tvBestandenLijst.setItems(sortedBuilders);
     }
 

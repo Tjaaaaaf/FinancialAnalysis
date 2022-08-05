@@ -1,11 +1,11 @@
 package Services;
 
-import Models.DocumentWrapper.DocumentBuilder;
+import Models.Enums.FileExtension;
+import Models.ErrorObject;
 import Models.Interfaces.IDocumentBuilder;
 import Persistence.PersistenceController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.io.File;
 
 public class DomeinController {
@@ -16,8 +16,8 @@ public class DomeinController {
         this.persistenceController = new PersistenceController();
     }
 
-    public String addDocument(File file) {
-        return persistenceController.addDocument(file);
+    public ErrorObject addDocument(File file, FileExtension fileExtension) {
+        return persistenceController.addDocument(file, fileExtension);
     }
 
     public void removeDocument(String documentName) {
@@ -28,7 +28,7 @@ public class DomeinController {
         return persistenceController.getDocumentBuilder(name);
     }
 
-    public ObservableList<DocumentBuilder> getActiveDocumentBuilders() {
+    public ObservableList<IDocumentBuilder> getActiveDocumentBuilders() {
         return FXCollections.observableArrayList(persistenceController.getActiveDocumentBuilders());
     }
 

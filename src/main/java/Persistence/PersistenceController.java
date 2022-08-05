@@ -1,9 +1,9 @@
 package Persistence;
 
-import Models.DocumentWrapper.DocumentBuilder;
+import Models.Enums.FileExtension;
+import Models.ErrorObject;
 import Models.Interfaces.IDocumentBuilder;
 import javafx.collections.ObservableList;
-
 import java.io.File;
 import java.util.List;
 
@@ -15,8 +15,8 @@ public class PersistenceController {
         this.documentRepository = new DocumentWrapperRepository();
     }
 
-    public String addDocument(File file) {
-        return documentRepository.addDocument(file);
+    public ErrorObject addDocument(File file, FileExtension fileExtension) {
+        return documentRepository.addDocument(file, fileExtension);
     }
 
     public void removeDocument(String documentName) {
@@ -27,7 +27,7 @@ public class PersistenceController {
         return documentRepository.getDocumentBuilderByName(name);
     }
 
-    public List<DocumentBuilder> getActiveDocumentBuilders() {
+    public List<IDocumentBuilder> getActiveDocumentBuilders() {
         return documentRepository.getActiveDocumentBuilders();
     }
 
