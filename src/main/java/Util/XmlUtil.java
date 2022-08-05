@@ -40,7 +40,7 @@ public final class XmlUtil {
 
     public static List<Node> asList(NodeList n) {
         return n.getLength() == 0
-                ? Collections.<Node>emptyList() : new NodeListWrapper(n);
+                ? Collections.emptyList() : new NodeListWrapper(n);
     }
 
     public static final class NodeListWrapper extends AbstractList<Node> implements RandomAccess {

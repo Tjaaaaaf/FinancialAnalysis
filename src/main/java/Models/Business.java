@@ -12,7 +12,7 @@ public class Business {
     private String bus;
     private String postcode;
     private String landcode;
-    private List<DocumentWrapper> jaarrekeningen;
+    private final List<DocumentWrapper> jaarrekeningen;
     
     public Business(String name, String ondernemingsnummer, String adres, String nr, String bus, String postcode, String landcode) {
         setName(name);

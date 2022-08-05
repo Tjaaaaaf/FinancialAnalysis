@@ -5,7 +5,6 @@ import Models.Enums.ReportStyle;
 import Models.DocumentWrapper;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
-
 import java.util.List;
 
 public class ReportService {
@@ -22,7 +21,6 @@ public class ReportService {
     private HSSFCellStyle BoldBlue;
     private HSSFCellStyle BottomNormal;
     private HSSFCellStyle BoldTop;
-    private HSSFFont fontBold;
     private HSSFCellStyle BoldNumber;
     private HSSFCellStyle BoldYellowNumber;
     private HSSFCellStyle BoldLightGreyNumber;
@@ -1881,7 +1879,7 @@ public class ReportService {
     }
 
     private void makeStyles() {
-        fontBold = workbook.createFont();
+        HSSFFont fontBold = workbook.createFont();
         fontBold.setBold(true);
 
         Bold = workbook.createCellStyle();

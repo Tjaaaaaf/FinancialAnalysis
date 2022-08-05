@@ -2,7 +2,6 @@ package Models.Interfaces;
 
 import Models.Business;
 import Models.DocumentWrapper;
-import Models.Enums.PropertyName;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -19,8 +18,6 @@ public interface IDocumentBuilder {
     BooleanProperty getSelectedProperty();
 
     DocumentWrapper build();
-
-    IDocumentBuilder removeProperty(PropertyName propertyName);
 
     //BALANS NA WINSTVERDELING
     //ACTIVA
@@ -252,7 +249,7 @@ public interface IDocumentBuilder {
 
     IDocumentBuilder addRRBedrijfskostenAndereBedrijfskosten();
 
-    IDocumentBuilder addRRBedrijfskostenHerstructurerngskostenGeactiveerdeBedrijfskosten();
+    IDocumentBuilder addRRBedrijfskostenHerstructureringskostenGeactiveerdeBedrijfskosten();
 
     IDocumentBuilder addRRBedrijfskostenNietRecurrenteBedrijfskosten();
 

@@ -11,7 +11,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.VBox;
-
 import java.io.IOException;
 
 public class SettingsScreenController extends VBox {

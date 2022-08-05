@@ -7,7 +7,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
-
 import java.io.IOException;
 
 public class StartScreenController extends BorderPane {

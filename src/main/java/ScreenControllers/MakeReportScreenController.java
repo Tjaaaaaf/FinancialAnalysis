@@ -1,5 +1,6 @@
 package ScreenControllers;
 
+import Persistence.DocumentWrapperRepository;
 import Services.DomeinController;
 import Util.DocumentComparator;
 import Models.ErrorObject;
@@ -19,16 +20,19 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MakeReportScreenController extends VBox {
 
@@ -42,7 +46,7 @@ public class MakeReportScreenController extends VBox {
     private final SettingsScreenController settingsScreenController;
     private File directoryFile;
     private HSSFSheet report;
-    private XmlUtil xmlUtil = new XmlUtil();
+    private final XmlUtil xmlUtil = new XmlUtil();
     // endregion
 
     // region FXMLProperties
@@ -60,7 +64,7 @@ public class MakeReportScreenController extends VBox {
 
     // region Constructor
     public MakeReportScreenController(DomeinController domeinController, StartScreenController startScreenController,
-            ReportStyle style, SettingsScreenController settingsScreenController) {
+                                      ReportStyle style, SettingsScreenController settingsScreenController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MakeReportScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
@@ -105,7 +109,7 @@ public class MakeReportScreenController extends VBox {
 
     @FXML
     private void chooseLocation(ActionEvent event) {
-        directoryFile = directoryChooser.showDialog(Stage.getWindows().filtered(window -> window.isShowing()).get(0));
+        directoryFile = directoryChooser.showDialog(Stage.getWindows().filtered(Window::isShowing).get(0));
         if (directoryFile != null) {
             tfLocation.setText(directoryFile.getPath());
             xmlUtil.setStringFromPreferences("defaultSource", directoryFile.getPath());
@@ -124,6 +128,11 @@ public class MakeReportScreenController extends VBox {
                 AlertService.showAlert(error.key, error.key, error.message, this.getScene().getWindow(),
                         AlertType.ERROR);
             else {
+                try {
+                    Desktop.getDesktop().open(directoryFile);
+                } catch (IOException ex) {
+                    Logger.getLogger(MakeReportScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 startScreenController
                         .setCenter(new DocumentManagementScreenController(domeinController, startScreenController));
                 startScreenController.switchColorSaveStep();
@@ -213,123 +222,119 @@ public class MakeReportScreenController extends VBox {
     }
 
     private void sortDocuments() {
-        Collections.sort(documents, new DocumentComparator());
+        documents.sort(new DocumentComparator());
     }
 
     private void compileVergelijking() {
-        domeinController.getActiveDocumentBuilders().stream().forEach(doc -> {
-            documents.add(doc.addBAVlottendeActiva()
-                    .addBALiquideMiddelen()
-                    .addBATotaalActiva()
-                    .addBPEigenVermogen()
-                    .addBPReserves()
-                    .addBPOvergedragenWinstVerlies()
-                    .addBPSchuldenHoogstens1Jaar()
-                    .addRRBedrijfsopbrengsten()
-                    .addRRBedrijfsopbrengstenOmzet()
-                    .addRRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva()
-                    .addRRBedrijfsWinstVerlies()
-                    .addRRWinstVerliesBoekjaar()
-                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffen()
-                    .addRRBedrijfskostenBezoldigingenSocialeLastenPensioenen()
-                    .addRRBedrijfskostenDienstenDiverseGoederen()
-                    .addRRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingen()
-                    .addRRBedrijfskostenAndereBedrijfskosten()
-                    .addRRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingen()
-                    .addRRFinancieleKosten()
-                    .addRRFinancieleKostenRecurrent()
-                    .addRRFinancieleKostenNietRecurrent()
-                    .addRRFinancieleOpbrengsten()
-                    .addRRFinancieleOpbrengstenRecurrent()
-                    .addRRBedrijfskostenNietRecurrenteBedrijfskosten()
-                    .addRRBedrijfskostenUitzonderlijkeKosten()
-                    .addRRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengsten()
-                    .addRRBedrijfsopbrengstenUitzonderlijkeOpbrengsten()
-                    .addRRBelastingenOpResultaat()
-                    .addRROntrekkingenUitgesteldeBelastingen()
-                    .addRROverboekingUitgesteldeBelastingen()
-                    .addBAVoorradenBestellingenUitvoering()
-                    .addBAVorderingenHoogstens1JaarHandelsvorderingen()
-                    .addBPSchuldenHoogstens1JaarHandelsschuldenLeveranciers()
-                    .addSBGemiddeldeFTE()
-                    .addSBGepresteerdeUren()
-                    .addSBGemiddeldAantalFTEUitzendkrachten()
-                    .addSBPersoneelskosten()
-                    .addSBGepresteerdeUrenUitzendkrachten()
-                    .addSBPersoneelskostenUitzendkrachten()
-                    .addSBAantalWerknemersOpEindeBoekjaar()
-                    .addSBAantalBediendenOpEindeBoekjaar()
-                    .addSBAantalArbeidersOpEindeBoekjaar()
-                    .addBVBABrutomarge()
-                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen()
-                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename()
-                    .addBPSchulden()
-                    .build());
-        });
+        domeinController.getActiveDocumentBuilders().forEach(doc -> documents.add(doc.addBAVlottendeActiva()
+                .addBALiquideMiddelen()
+                .addBATotaalActiva()
+                .addBPEigenVermogen()
+                .addBPReserves()
+                .addBPOvergedragenWinstVerlies()
+                .addBPSchuldenHoogstens1Jaar()
+                .addRRBedrijfsopbrengsten()
+                .addRRBedrijfsopbrengstenOmzet()
+                .addRRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva()
+                .addRRBedrijfsWinstVerlies()
+                .addRRWinstVerliesBoekjaar()
+                .addRRBedrijfskostenHandelsgoederenGrondHulpstoffen()
+                .addRRBedrijfskostenBezoldigingenSocialeLastenPensioenen()
+                .addRRBedrijfskostenDienstenDiverseGoederen()
+                .addRRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingen()
+                .addRRBedrijfskostenAndereBedrijfskosten()
+                .addRRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingen()
+                .addRRFinancieleKosten()
+                .addRRFinancieleKostenRecurrent()
+                .addRRFinancieleKostenNietRecurrent()
+                .addRRFinancieleOpbrengsten()
+                .addRRFinancieleOpbrengstenRecurrent()
+                .addRRBedrijfskostenNietRecurrenteBedrijfskosten()
+                .addRRBedrijfskostenUitzonderlijkeKosten()
+                .addRRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengsten()
+                .addRRBedrijfsopbrengstenUitzonderlijkeOpbrengsten()
+                .addRRBelastingenOpResultaat()
+                .addRROntrekkingenUitgesteldeBelastingen()
+                .addRROverboekingUitgesteldeBelastingen()
+                .addBAVoorradenBestellingenUitvoering()
+                .addBAVorderingenHoogstens1JaarHandelsvorderingen()
+                .addBPSchuldenHoogstens1JaarHandelsschuldenLeveranciers()
+                .addSBGemiddeldeFTE()
+                .addSBGepresteerdeUren()
+                .addSBGemiddeldAantalFTEUitzendkrachten()
+                .addSBPersoneelskosten()
+                .addSBGepresteerdeUrenUitzendkrachten()
+                .addSBPersoneelskostenUitzendkrachten()
+                .addSBAantalWerknemersOpEindeBoekjaar()
+                .addSBAantalBediendenOpEindeBoekjaar()
+                .addSBAantalArbeidersOpEindeBoekjaar()
+                .addBVBABrutomarge()
+                .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen()
+                .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename()
+                .addBPSchulden()
+                .build()));
     }
 
     private void compileHistoriek() {
-        domeinController.getActiveDocumentBuilders().stream().forEach(doc -> {
-            documents.add(doc.addBAVasteActiva()
-                    .addBAImmaterieleVasteActiva()
-                    .addBAMaterieleVasteActiva()
-                    .addBAFinancieleVasteActiva()
-                    .addBAVlottendeActiva()
-                    .addBAVoorradenBestellingenUitvoering()
-                    .addBAVorderingenHoogstens1JaarHandelsvorderingen()
-                    .addBAVorderingenHoogstens1JaarOverigeVorderingen()
-                    .addBALiquideMiddelen()
-                    .addBAOverlopendeRekeningen()
-                    .addBATotaalActiva()
-                    .addBPEigenVermogen()
-                    .addBPVoorzieningenUitgesteldeBelastingen()
-                    .addBPSchuldenMeer1Jaar()
-                    .addBPSchuldenMeer1JaarFinancieleSchulden()
-                    .addBPSchuldenHoogstens1JaarHandelsschuldenLeveranciers()
-                    .addBPSchuldenMeer1JaarOverigeSchulden()
-                    .addBPTotaalPassiva()
-                    .addRRBedrijfsopbrengsten()
-                    .addRRBedrijfsopbrengstenOmzet()
-                    .addRRBedrijfskosten()
-                    .addRRWinstVerliesBoekjaar()
-                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffen()
-                    .addRRBedrijfskostenBezoldigingenSocialeLastenPensioenen()
-                    .addRRBedrijfskostenDienstenDiverseGoederen()
-                    .addRRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingen()
-                    .addRRBedrijfskostenAndereBedrijfskosten()
-                    .addRRBedrijfskostenNietRecurrenteBedrijfskosten()
-                    .addRRBedrijfskostenUitzonderlijkeKosten()
-                    .addRRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva()
-                    .addRRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingen()
-                    .addRRBedrijfsWinstVerlies()
-                    .addRRBelastingenOpResultaat()
-                    .addRROntrekkingenUitgesteldeBelastingen()
-                    .addRROverboekingUitgesteldeBelastingen()
-                    .addBPOverlopendeRekeningen()
-                    .addBPSchuldenHoogstens1Jaar()
-                    .addBPSchuldenHoogstens1JaarFinancieleSchulden()
-                    .addRRFinancieleOpbrengsten()
-                    .addRRFinancieleKosten()
-                    .addRRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengsten()
-                    .addRRBedrijfsopbrengstenUitzonderlijkeOpbrengsten()
-                    .addRRFinancieleKostenRecurrent()
-                    .addRRFinancieleOpbrengstenRecurrent()
-                    .addTLMVAMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLIMVAMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLFVAMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLMVAConcessiesOctrooienLicentiesKnowhowMerkenSoortgelijkeRechtenMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLMVATerreinenEnGebouwenMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLMVAInstallatiesMachinesUitrustingMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLMVAMeubilairRollendMaterieelMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLMVAOverigeMaterieleActivaMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLFVAOndernemingenDeelnemingsverhoudingMutatiesTijdensBoekjaarAanschaffingen()
-                    .addTLFVAAndereOndernemingenMutatiesTijdensBoekjaarAanschaffingen()
-                    .addBAOndernemingenDeelnemingsverhoudingDeelnemingen()
-                    .addBVBABrutomarge()
-                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen()
-                    .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename()
-                    .build());
-        });
+        domeinController.getActiveDocumentBuilders().forEach(doc -> documents.add(doc.addBAVasteActiva()
+                .addBAImmaterieleVasteActiva()
+                .addBAMaterieleVasteActiva()
+                .addBAFinancieleVasteActiva()
+                .addBAVlottendeActiva()
+                .addBAVoorradenBestellingenUitvoering()
+                .addBAVorderingenHoogstens1JaarHandelsvorderingen()
+                .addBAVorderingenHoogstens1JaarOverigeVorderingen()
+                .addBALiquideMiddelen()
+                .addBAOverlopendeRekeningen()
+                .addBATotaalActiva()
+                .addBPEigenVermogen()
+                .addBPVoorzieningenUitgesteldeBelastingen()
+                .addBPSchuldenMeer1Jaar()
+                .addBPSchuldenMeer1JaarFinancieleSchulden()
+                .addBPSchuldenHoogstens1JaarHandelsschuldenLeveranciers()
+                .addBPSchuldenMeer1JaarOverigeSchulden()
+                .addBPTotaalPassiva()
+                .addRRBedrijfsopbrengsten()
+                .addRRBedrijfsopbrengstenOmzet()
+                .addRRBedrijfskosten()
+                .addRRWinstVerliesBoekjaar()
+                .addRRBedrijfskostenHandelsgoederenGrondHulpstoffen()
+                .addRRBedrijfskostenBezoldigingenSocialeLastenPensioenen()
+                .addRRBedrijfskostenDienstenDiverseGoederen()
+                .addRRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingen()
+                .addRRBedrijfskostenAndereBedrijfskosten()
+                .addRRBedrijfskostenNietRecurrenteBedrijfskosten()
+                .addRRBedrijfskostenUitzonderlijkeKosten()
+                .addRRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva()
+                .addRRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingen()
+                .addRRBedrijfsWinstVerlies()
+                .addRRBelastingenOpResultaat()
+                .addRROntrekkingenUitgesteldeBelastingen()
+                .addRROverboekingUitgesteldeBelastingen()
+                .addBPOverlopendeRekeningen()
+                .addBPSchuldenHoogstens1Jaar()
+                .addBPSchuldenHoogstens1JaarFinancieleSchulden()
+                .addRRFinancieleOpbrengsten()
+                .addRRFinancieleKosten()
+                .addRRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengsten()
+                .addRRBedrijfsopbrengstenUitzonderlijkeOpbrengsten()
+                .addRRFinancieleKostenRecurrent()
+                .addRRFinancieleOpbrengstenRecurrent()
+                .addTLMVAMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLIMVAMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLFVAMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLMVAConcessiesOctrooienLicentiesKnowhowMerkenSoortgelijkeRechtenMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLMVATerreinenEnGebouwenMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLMVAInstallatiesMachinesUitrustingMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLMVAMeubilairRollendMaterieelMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLMVAOverigeMaterieleActivaMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLFVAOndernemingenDeelnemingsverhoudingMutatiesTijdensBoekjaarAanschaffingen()
+                .addTLFVAAndereOndernemingenMutatiesTijdensBoekjaarAanschaffingen()
+                .addBAOndernemingenDeelnemingsverhoudingDeelnemingen()
+                .addBVBABrutomarge()
+                .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen()
+                .addRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename()
+                .build()));
     }
     // endregion
 }
