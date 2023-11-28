@@ -1,6 +1,6 @@
 package StartUp;
 
-import Services.DomeinController;
+import Services.DomainController;
 import ScreenControllers.StartScreenController;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -10,7 +10,7 @@ public class StartApplication extends Application {
 
     @Override
     public void start(Stage stage) {
-        DomeinController domeincontroller = new DomeinController();
+        DomainController domeincontroller = new DomainController();
 
         StartScreenController root = new StartScreenController(domeincontroller);
 

@@ -4,7 +4,7 @@ import Models.Enums.FileExtension;
 import Models.Interfaces.IDocumentBuilder;
 import Services.AlertService;
 import Models.ErrorObject;
-import Services.DomeinController;
+import Services.DomainController;
 import Util.XmlUtil;
 import javafx.scene.control.Alert.AlertType;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -33,7 +33,7 @@ import java.util.List;
 public class DocumentManagementScreenController extends VBox {
 
     //region Properties
-    private final DomeinController domeincontroller;
+    private final DomainController domeincontroller;
     private final FileChooser fileChooser;
     private final StartScreenController startScreenController;
     private final Comparator<IDocumentBuilder> builderSorter = (builder1, builder2) -> builder1.getNameProperty().get().compareToIgnoreCase(builder2.getNameProperty().get());
@@ -61,7 +61,7 @@ public class DocumentManagementScreenController extends VBox {
     //endregion
 
     //region Constructor
-    public DocumentManagementScreenController(DomeinController domeincontroller, StartScreenController startScreenController) {
+    public DocumentManagementScreenController(DomainController domeincontroller, StartScreenController startScreenController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DocumentManagementScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);

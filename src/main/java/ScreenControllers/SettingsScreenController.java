@@ -3,7 +3,7 @@ package ScreenControllers;
 import Models.ErrorObject;
 import Services.AlertService;
 import Models.Enums.ReportStyle;
-import Services.DomeinController;
+import Services.DomainController;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,7 +16,7 @@ import java.io.IOException;
 public class SettingsScreenController extends VBox {
 
     //region Properties
-    private final DomeinController domeinController;
+    private final DomainController domainController;
     private final StartScreenController startScreenController;
     private final DocumentManagementScreenController documentManagementScreenController;
     private String companyType = "";
@@ -32,7 +32,7 @@ public class SettingsScreenController extends VBox {
     //endregion
 
     //region Constructor
-    public SettingsScreenController(DomeinController domeinController, StartScreenController startScreenController, DocumentManagementScreenController documentManagementScreenController) {
+    public SettingsScreenController(DomainController domainController, StartScreenController startScreenController, DocumentManagementScreenController documentManagementScreenController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SettingsScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
@@ -42,7 +42,7 @@ public class SettingsScreenController extends VBox {
             throw new RuntimeException(ex);
         }
 
-        this.domeinController = domeinController;
+        this.domainController = domainController;
         this.startScreenController = startScreenController;
         this.documentManagementScreenController = documentManagementScreenController;
 
@@ -85,20 +85,20 @@ public class SettingsScreenController extends VBox {
         switch (companyType) {
             case "NV":
                 if (sheetType.equals("Historiek")) {
-                    next = new MakeReportScreenController(domeinController, startScreenController, ReportStyle.HISTORIEKNV, this);
+                    next = new MakeReportScreenController(domainController, startScreenController, ReportStyle.HISTORIEKNV, this);
                 } else {
-                    next = new MakeReportScreenController(domeinController, startScreenController, ReportStyle.VERGELIJKINGNV, this);
+                    next = new MakeReportScreenController(domainController, startScreenController, ReportStyle.VERGELIJKINGNV, this);
                 }
                 break;
             case "BVBA":
                 if (sheetType.equals("Historiek")) {
-                    next = new MakeReportScreenController(domeinController, startScreenController, ReportStyle.HISTORIEKBVBA, this);
+                    next = new MakeReportScreenController(domainController, startScreenController, ReportStyle.HISTORIEKBVBA, this);
                 } else {
-                    next = new MakeReportScreenController(domeinController, startScreenController, ReportStyle.VERGELIJKINGBVBA, this);
+                    next = new MakeReportScreenController(domainController, startScreenController, ReportStyle.VERGELIJKINGBVBA, this);
                 }
                 break;
             default:
-                startScreenController.setCenter(new MakeReportScreenController(domeinController, startScreenController, ReportStyle.HISTORIEKNV, this));
+                startScreenController.setCenter(new MakeReportScreenController(domainController, startScreenController, ReportStyle.HISTORIEKNV, this));
         }
         return null;
     }

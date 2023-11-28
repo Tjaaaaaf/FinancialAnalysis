@@ -1,7 +1,6 @@
 package ScreenControllers;
 
-import Persistence.DocumentWrapperRepository;
-import Services.DomeinController;
+import Services.DomainController;
 import Util.DocumentComparator;
 import Models.ErrorObject;
 import Services.AlertService;
@@ -37,7 +36,7 @@ import java.util.logging.Logger;
 public class MakeReportScreenController extends VBox {
 
     // region Properties
-    private final DomeinController domeinController;
+    private final DomainController domainController;
     private final DirectoryChooser directoryChooser;
     private final StartScreenController startScreenController;
     private final ReportStyle style;
@@ -63,7 +62,7 @@ public class MakeReportScreenController extends VBox {
     // endregion
 
     // region Constructor
-    public MakeReportScreenController(DomeinController domeinController, StartScreenController startScreenController,
+    public MakeReportScreenController(DomainController domainController, StartScreenController startScreenController,
                                       ReportStyle style, SettingsScreenController settingsScreenController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MakeReportScreen.fxml"));
         loader.setRoot(this);
@@ -73,7 +72,7 @@ public class MakeReportScreenController extends VBox {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        this.domeinController = domeinController;
+        this.domainController = domainController;
         this.startScreenController = startScreenController;
         this.settingsScreenController = settingsScreenController;
         this.directoryChooser = new DirectoryChooser();
@@ -134,7 +133,7 @@ public class MakeReportScreenController extends VBox {
                     Logger.getLogger(MakeReportScreenController.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 startScreenController
-                        .setCenter(new DocumentManagementScreenController(domeinController, startScreenController));
+                        .setCenter(new DocumentManagementScreenController(domainController, startScreenController));
                 startScreenController.switchColorSaveStep();
                 startScreenController.switchColorDocumentStep();
             }
@@ -226,7 +225,7 @@ public class MakeReportScreenController extends VBox {
     }
 
     private void compileVergelijking() {
-        domeinController.getActiveDocumentBuilders().forEach(doc -> documents.add(doc.addBAVlottendeActiva()
+        domainController.getActiveDocumentBuilders().forEach(doc -> documents.add(doc.addBAVlottendeActiva()
                 .addBALiquideMiddelen()
                 .addBATotaalActiva()
                 .addBPEigenVermogen()
@@ -276,7 +275,7 @@ public class MakeReportScreenController extends VBox {
     }
 
     private void compileHistoriek() {
-        domeinController.getActiveDocumentBuilders().forEach(doc -> documents.add(doc.addBAVasteActiva()
+        domainController.getActiveDocumentBuilders().forEach(doc -> documents.add(doc.addBAVasteActiva()
                 .addBAImmaterieleVasteActiva()
                 .addBAMaterieleVasteActiva()
                 .addBAFinancieleVasteActiva()

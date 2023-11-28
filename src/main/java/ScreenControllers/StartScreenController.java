@@ -1,6 +1,6 @@
 package ScreenControllers;
 
-import Services.DomeinController;
+import Services.DomainController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
@@ -12,7 +12,7 @@ import java.io.IOException;
 public class StartScreenController extends BorderPane {
 
     //region Properties
-    private final DomeinController domeincontroller;
+    private final DomainController domeincontroller;
     //endregion
 
     //region FXMLProperties
@@ -31,7 +31,7 @@ public class StartScreenController extends BorderPane {
     //endregion
 
     //region Constructor
-    public StartScreenController(DomeinController domeincontroller) {
+    public StartScreenController(DomainController domeincontroller) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/StartScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);

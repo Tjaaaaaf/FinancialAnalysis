@@ -8,11 +8,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.io.File;
 
-public class DomeinController {
+public class DomainController {
 
     private final PersistenceController persistenceController;
 
-    public DomeinController() {
+    public DomainController() {
         this.persistenceController = new PersistenceController();
     }
 
