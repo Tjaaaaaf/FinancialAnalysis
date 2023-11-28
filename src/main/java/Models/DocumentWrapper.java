@@ -8,6 +8,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,22 +104,24 @@ public class DocumentWrapper implements IDocumentWrapper {
             this.fileExtension = fileExtension;
         }
 
+        private String getTextContentOfTag(String tag) {
+            Node tagNode = this.document.getElementsByTagName(tag).item(0);
+            return tagNode == null ? "" : tagNode.getTextContent();
+        }
+
         public boolean extractBusiness() {
             try {
                 switch (fileExtension) {
                     case XBRL:
                         this.business = new Business(
-                                this.document.getElementsByTagName("pfs-gcd:EntityCurrentLegalName").item(0).getTextContent(),
-                                this.document.getElementsByTagName("pfs-gcd:IdentifierValue").item(0).getTextContent(),
-                                this.document.getElementsByTagName("pfs-gcd:Street").item(0).getTextContent(),
-                                this.document.getElementsByTagName("pfs-gcd:Number").item(0).getTextContent(),
-                                this.document.getElementsByTagName("pfs-gcd:Box").item(0) == null ? ""
-                                        : this.document.getElementsByTagName("pfs-gcd:Box").item(0).getTextContent(),
-                                this.document.getElementsByTagName("pfs-gcd:PostalCodeCity").item(0).getChildNodes().item(0) == null ? ""
-                                        : this.document.getElementsByTagName("pfs-gcd:PostalCodeCity").item(0).getTextContent(),
-                                this.document.getElementsByTagName("pfs-gcd:CountryCode").item(0).getChildNodes().item(0) == null ? ""
-                                        : this.document.getElementsByTagName("pfs-gcd:CountryCode").item(0).getTextContent());
-                        return true;
+                                getTextContentOfTag("pfs-gcd:EntityCurrentLegalName"),
+                                getTextContentOfTag("pfs-gcd:IdentifierValue"),
+                                getTextContentOfTag("pfs-gcd:Street"),
+                                getTextContentOfTag("pfs-gcd:Number"),
+                                getTextContentOfTag("pfs-gcd:Box"),
+                                getTextContentOfTag("pfs-gcd:PostalCodeCity"),
+                                getTextContentOfTag("pfs-gcd:CountryCode"));
+                        return false;
                     case CSV:
                         this.business = new Business(
                                 csvValues.get("Entity name"),
@@ -128,12 +132,12 @@ public class DocumentWrapper implements IDocumentWrapper {
                                 csvValues.get("Entity postal code"),
                                 csvValues.get("Entity country")
                         );
-                        return true;
-                    default:
                         return false;
+                    default:
+                        return true;
                 }
             } catch (NullPointerException ex) {
-                return false;
+                return true;
             }
         }
 
@@ -143,16 +147,18 @@ public class DocumentWrapper implements IDocumentWrapper {
 
                 int index = 0;
                 boolean currentYearFound = false, currentDurationFound = false;
-                while (index < this.document.getElementsByTagName("xbrli:context").getLength()) {
-                    Node e = this.document.getElementsByTagName("xbrli:context").item(index);
-                    if (e.getChildNodes().item(3).getChildNodes().getLength() == 3 && !currentYearFound) {
-                        currentTimePeriods.add(e.getAttributes().getNamedItem("id").getTextContent());
-                        currentYearFound = true;
-                    }
+                NodeList contextList = this.document.getElementsByTagName("xbrli:context");
+                while (index < contextList.getLength()) {
+                    Node e = contextList.item(index);
+                    int numberOfChildren = e.getChildNodes().item(3).getChildNodes().getLength();
+                    String idAttribute = e.getAttributes().getNamedItem("id").getTextContent();
 
-                    if (e.getChildNodes().item(3).getChildNodes().getLength() == 5 && !currentDurationFound) {
-                        currentTimePeriods.add(e.getAttributes().getNamedItem("id").getTextContent());
-                        currentDurationFound = true;
+                    if ((numberOfChildren == 3 && !currentYearFound) || (numberOfChildren == 5 && !currentDurationFound)) {
+                        currentTimePeriods.add(idAttribute);
+                        if (numberOfChildren == 3)
+                            currentYearFound = true;
+                        else
+                            currentDurationFound = true;
                     }
 
                     index++;
@@ -217,1999 +223,811 @@ public class DocumentWrapper implements IDocumentWrapper {
             return new DocumentWrapper(this);
         }
 
-        @Override
-        public IDocumentBuilder addBAOprichtingskosten() {
+        private IDocumentBuilder addProperty(PropertyName propertyName, String CSVKey, String XBRLKey) {
             switch (fileExtension) {
                 case CSV:
-                    properties.replace(PropertyName.BAOprichtingskosten, getStringFromCSVValues("20"));
+                    properties.replace(propertyName, getStringFromCSVValues(CSVKey));
                     break;
                 case XBRL:
-                    properties.replace(PropertyName.BAOprichtingskosten, getStringFromXBRL("FormationExpenses"));
+                    properties.replace(propertyName, getStringFromXBRL(XBRLKey));
             }
             return this;
+        }
+
+        private IDocumentBuilder addProperty(PropertyName propertyName, String CSVKey, String XBRLKey, String XBRLKeyBackup) {
+            switch (fileExtension) {
+                case CSV:
+                    properties.replace(propertyName, getStringFromCSVValues(CSVKey));
+                    break;
+                case XBRL:
+                    String stringFromXBRL = getStringFromXBRL(XBRLKey);
+                    if (stringFromXBRL.equals("0")) {
+                        stringFromXBRL = getStringFromXBRL(XBRLKeyBackup);
+                    }
+                    properties.replace(propertyName, stringFromXBRL);
+            }
+            return this;
+        }
+
+        @Override
+        public IDocumentBuilder addBAOprichtingskosten() {
+            return addProperty(PropertyName.BAOprichtingskosten, "20", "FormationExpenses");
         }
 
         @Override
         public IDocumentBuilder addBAVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVasteActiva, getStringFromCSVValues("21/28"));
-                    break;
-                case XBRL:
-                    String vasteActiva = getStringFromXBRL("FixedAssetsFormationExpensesExcluded");
-                    if (vasteActiva.equals("0")) {
-                        vasteActiva = getStringFromXBRL("FixedAssets");
-                    }
-                    properties.replace(PropertyName.BAVasteActiva, vasteActiva);
-            }
-            return this;
+            return addProperty(PropertyName.BAVasteActiva, "21/28", "FixedAssetsFormationExpensesExcluded", "FixedAssets");
         }
 
         @Override
         public IDocumentBuilder addBAImmaterieleVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAImmaterieleVasteActiva, getStringFromCSVValues("21"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAImmaterieleVasteActiva, getStringFromXBRL("IntangibleFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.BAImmaterieleVasteActiva, "21", "IntangibleFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addBAMaterieleVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAMaterieleVasteActiva, getStringFromCSVValues("22/27"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAMaterieleVasteActiva, getStringFromXBRL("TangibleFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.BAMaterieleVasteActiva, "22/27", "TangibleFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addBATerreinenGebouwen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BATerreinenGebouwen, getStringFromCSVValues("22"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BATerreinenGebouwen, getStringFromXBRL("LandBuildings"));
-            }
-            return this;
+            return addProperty(PropertyName.BATerreinenGebouwen, "22", "LandBuildings");
         }
 
         @Override
         public IDocumentBuilder addBAInstallatiesMachinesUitrusting() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAInstallatiesMachinesUitrusting, getStringFromCSVValues("23"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAInstallatiesMachinesUitrusting,
-                            getStringFromXBRL("PlantMachineryEquipment"));
-            }
-            return this;
+            return addProperty(PropertyName.BAInstallatiesMachinesUitrusting, "23", "PlantMachineryEquipment");
         }
 
         @Override
         public IDocumentBuilder addBAMeubilairRollendMaterieel() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAMeubilairRollendMaterieel, getStringFromCSVValues("24"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAMeubilairRollendMaterieel, getStringFromXBRL("FurnitureVehicles"));
-            }
-            return this;
+            return addProperty(PropertyName.BAMeubilairRollendMaterieel, "24", "FurnitureVehicles");
         }
 
         @Override
         public IDocumentBuilder addBALeasingSoortgelijkeRechten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BALeasingSoortgelijkeRechten, getStringFromCSVValues("25"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BALeasingSoortgelijkeRechten, getStringFromXBRL("LeasingSimilarRights"));
-            }
-            return this;
+            return addProperty(PropertyName.BALeasingSoortgelijkeRechten, "25", "LeasingSimilarRights");
         }
 
         @Override
         public IDocumentBuilder addBAOverigeMaterieleVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAOverigeMaterieleVasteActiva, getStringFromCSVValues("26"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAOverigeMaterieleVasteActiva, getStringFromXBRL("OtherTangibleAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.BAOverigeMaterieleVasteActiva, "26", "OtherTangibleAssets");
         }
 
         @Override
         public IDocumentBuilder addBAActivaAanbouwVooruitbetalingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAActivaAanbouwVooruitbetalingen, getStringFromCSVValues("27"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAActivaAanbouwVooruitbetalingen,
-                            getStringFromXBRL("AssetsUnderConstructionAdvancePayments"));
-            }
-            return this;
+            return addProperty(PropertyName.BAActivaAanbouwVooruitbetalingen, "27", "AssetsUnderConstructionAdvancePayments");
         }
 
         @Override
         public IDocumentBuilder addBAFinancieleVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAFinancieleVasteActiva, getStringFromCSVValues("28"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAFinancieleVasteActiva, getStringFromXBRL("FinancialFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.BAFinancieleVasteActiva, "28", "FinancialFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addBAVerbondenOndernemingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVerbondenOndernemingen, getStringFromCSVValues("280/1"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVerbondenOndernemingen,
-                            getStringFromXBRL("ParticipatingInterestsAffiliatedEnterprises"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVerbondenOndernemingen, "280/1", "ParticipatingInterestsAffiliatedEnterprises");
         }
 
         @Override
         public IDocumentBuilder addBAVerbondenOndernemingenDeelnemingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVerbondenOndernemingenDeelnemingen, getStringFromCSVValues("280"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVerbondenOndernemingenDeelnemingen,
-                            getStringFromXBRL("ParticipatingInterestsAmountsReceivableAffiliatedEnterprises"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVerbondenOndernemingenDeelnemingen, "280", "ParticipatingInterestsAmountsReceivableAffiliatedEnterprises");
         }
 
         @Override
         public IDocumentBuilder addBAVerbondenOndernemingenVorderingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVerbondenOndernemingenVorderingen, getStringFromCSVValues("281"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVerbondenOndernemingenVorderingen,
-                            getStringFromXBRL("OtherAmountsReceivableAffiliatedEnterprises"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVerbondenOndernemingenVorderingen, "281", "OtherAmountsReceivableAffiliatedEnterprises");
         }
 
         @Override
         public IDocumentBuilder addBAOndernemingenDeelnemingsverhouding() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAOndernemingenDeelnemingsverhouding, getStringFromCSVValues("282/3"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAOndernemingenDeelnemingsverhouding, getStringFromXBRL(
-                            "ParticipatingInterestsAmountsReceivableOtherEnterprisesLinkedParticipatingInterestsAssociatedEnterprisesExcluded"));
-            }
-            return this;
+            return addProperty(PropertyName.BAOndernemingenDeelnemingsverhouding, "282/3",
+                    "ParticipatingInterestsAmountsReceivableOtherEnterprisesLinkedParticipatingInterestsAssociatedEnterprisesExcluded");
         }
 
         @Override
         public IDocumentBuilder addBAOndernemingenDeelnemingsverhoudingDeelnemingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAOndernemingenDeelnemingsverhoudingDeelnemingen, getStringFromCSVValues("282"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAOndernemingenDeelnemingsverhoudingDeelnemingen, getStringFromXBRL(
-                            "ParticipatingInterestsOtherEnterprisesLinkedParticipatingInterestsAssociatedEnterprisesExcluded"));
-            }
-            return this;
+            return addProperty(PropertyName.BAOndernemingenDeelnemingsverhoudingDeelnemingen, "282",
+                    "ParticipatingInterestsOtherEnterprisesLinkedParticipatingInterestsAssociatedEnterprisesExcluded");
         }
 
         @Override
         public IDocumentBuilder addBAOndernemingenDeelnemingsverhoudingVorderingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAOndernemingenDeelnemingsverhoudingVorderingen, getStringFromCSVValues("283"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAOndernemingenDeelnemingsverhoudingVorderingen,
-                            getStringFromXBRL("SubordinatedAmountsReceivableEnterprisesLinkedByParticipatingInterests"));
-            }
-            return this;
+            return addProperty(PropertyName.BAOndernemingenDeelnemingsverhoudingVorderingen, "283", "SubordinatedAmountsReceivableEnterprisesLinkedByParticipatingInterests");
         }
 
         @Override
         public IDocumentBuilder addBAAndereFinancieleVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAAndereFinancieleVasteActiva, getStringFromCSVValues("284/8"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAAndereFinancieleVasteActiva, getStringFromXBRL("OtherFinancialAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.BAAndereFinancieleVasteActiva, "284/8", "OtherFinancialAssets");
         }
 
         @Override
         public IDocumentBuilder addBAAndereFinancieleVasteActivaAandelen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAAndereFinancieleVasteActivaAandelen, getStringFromCSVValues("284"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAAndereFinancieleVasteActivaAandelen,
-                            getStringFromXBRL("OtherFinancialAssetsParticipatingInterestsShares"));
-            }
-            return this;
+            return addProperty(PropertyName.BAAndereFinancieleVasteActivaAandelen, "284", "OtherFinancialAssetsParticipatingInterestsShares");
         }
 
         @Override
         public IDocumentBuilder addBAAndereFinancieleVasteActivaVorderingenBorgtochtenContanten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAAndereFinancieleVasteActivaVorderingenBorgtochtenContanten, getStringFromCSVValues("285/8"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAAndereFinancieleVasteActivaVorderingenBorgtochtenContanten,
-                            getStringFromXBRL("OtherFinancialAssetsAmountsReceivableCashGuarantees"));
-            }
-            return this;
+            return addProperty(PropertyName.BAAndereFinancieleVasteActivaVorderingenBorgtochtenContanten, "285/8", "OtherFinancialAssetsAmountsReceivableCashGuarantees");
         }
 
         @Override
         public IDocumentBuilder addBAVlottendeActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVlottendeActiva, getStringFromCSVValues("29/58"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVlottendeActiva, getStringFromXBRL("CurrentsAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVlottendeActiva, "29/58", "CurrentsAssets");
         }
 
         @Override
         public IDocumentBuilder addBAVorderingenMeer1Jaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVorderingenMeer1Jaar, getStringFromCSVValues("29"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVorderingenMeer1Jaar, getStringFromXBRL("AmountsReceivableMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVorderingenMeer1Jaar, "29", "AmountsReceivableMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBAVorderingenMeer1JaarHandelsvorderingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVorderingenMeer1JaarHandelsvorderingen, getStringFromCSVValues("290"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVorderingenMeer1JaarHandelsvorderingen,
-                            getStringFromXBRL("TradeDebtorsMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVorderingenMeer1JaarHandelsvorderingen, "290", "TradeDebtorsMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBAVorderingenMeer1JaarOverigeVorderingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVorderingenMeer1JaarOverigeVorderingen, getStringFromCSVValues("291"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVorderingenMeer1JaarOverigeVorderingen,
-                            getStringFromXBRL("OtherAmountsReceivableMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVorderingenMeer1JaarOverigeVorderingen, "291", "OtherAmountsReceivableMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoering() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoering, getStringFromCSVValues("3"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoering,
-                            getStringFromXBRL("StocksContractsProgress"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoering, "3", "StocksContractsProgress");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoeringVoorraden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorraden, getStringFromCSVValues("30/36"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorraden, getStringFromXBRL("Stocks"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoeringVoorraden, "30/36", "Stocks");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoeringVoorradenGrondHulpstoffen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGrondHulpstoffen, getStringFromCSVValues("30/31"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGrondHulpstoffen,
-                            getStringFromXBRL("StockRawMaterialsConsumables"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGrondHulpstoffen, "30/31", "StockRawMaterialsConsumables");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoeringVoorradenGoederenBewerking() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGoederenBewerking, getStringFromCSVValues("32"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGoederenBewerking,
-                            getStringFromXBRL("StockWorkProgress"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGoederenBewerking, "32", "StockWorkProgress");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoeringVoorradenGereedProduct() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGereedProduct, getStringFromCSVValues("33"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGereedProduct,
-                            getStringFromXBRL("StockFinishedGoods"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenGereedProduct, "33", "StockFinishedGoods");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoeringVoorradenHandelsgoederen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenHandelsgoederen, getStringFromCSVValues("34"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenHandelsgoederen,
-                            getStringFromXBRL("StockGoodsPurchasedResale"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenHandelsgoederen, "34", "StockGoodsPurchasedResale");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoeringVoorradenOnroerendeGoederenVerkoop() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenOnroerendeGoederenVerkoop, getStringFromCSVValues("35"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenOnroerendeGoederenVerkoop,
-                            getStringFromXBRL("StockImmovablePropertyIntendedSale"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenOnroerendeGoederenVerkoop, "35", "StockImmovablePropertyIntendedSale");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoeringVoorradenVooruitbetalingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenVooruitbetalingen, getStringFromCSVValues("36"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenVooruitbetalingen,
-                            getStringFromXBRL("AdvancePaymentsPurchasesStocks"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoeringVoorradenVooruitbetalingen, "36", "AdvancePaymentsPurchasesStocks");
         }
 
         @Override
         public IDocumentBuilder addBAVoorradenBestellingenUitvoeringBestellingenUitvoer() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringBestellingenUitvoer, getStringFromCSVValues("37"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVoorradenBestellingenUitvoeringBestellingenUitvoer,
-                            getStringFromXBRL("ContractsProgress"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVoorradenBestellingenUitvoeringBestellingenUitvoer, "37", "ContractsProgress");
         }
 
         @Override
         public IDocumentBuilder addBAVorderingenHoogstens1Jaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVorderingenHoogstens1Jaar, getStringFromCSVValues("40/41"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVorderingenHoogstens1Jaar,
-                            getStringFromXBRL("AmountsReceivableWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVorderingenHoogstens1Jaar, "40/41", "AmountsReceivableWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBAVorderingenHoogstens1JaarHandelsvorderingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVorderingenHoogstens1JaarHandelsvorderingen, getStringFromCSVValues("40"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVorderingenHoogstens1JaarHandelsvorderingen,
-                            getStringFromXBRL("TradeDebtorsWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVorderingenHoogstens1JaarHandelsvorderingen, "40", "TradeDebtorsWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBAVorderingenHoogstens1JaarOverigeVorderingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAVorderingenHoogstens1JaarOverigeVorderingen, getStringFromCSVValues("41"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAVorderingenHoogstens1JaarOverigeVorderingen,
-                            getStringFromXBRL("OtherAmountsReceivableWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BAVorderingenHoogstens1JaarOverigeVorderingen, "41", "OtherAmountsReceivableWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBAGeldBeleggingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAGeldBeleggingen, getStringFromCSVValues("50/53"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAGeldBeleggingen, getStringFromXBRL("CurrentInvestments"));
-            }
-            return this;
+            return addProperty(PropertyName.BAGeldBeleggingen, "50/53", "CurrentInvestments");
         }
 
         @Override
         public IDocumentBuilder addBAGeldBeleggingenEigenAandelen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAGeldBeleggingenEigenAandelen, getStringFromCSVValues("50"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAGeldBeleggingenEigenAandelen, getStringFromXBRL("OwnShares"));
-            }
-            return this;
+            return addProperty(PropertyName.BAGeldBeleggingenEigenAandelen, "50", "OwnShares");
         }
 
         @Override
         public IDocumentBuilder addBAGeldBeleggingenOverigeBeleggingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAGeldBeleggingenOverigeBeleggingen, getStringFromCSVValues("51/53"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAGeldBeleggingenOverigeBeleggingen,
-                            getStringFromXBRL("OtherCurrentInvestments"));
-            }
-            return this;
+            return addProperty(PropertyName.BAGeldBeleggingenOverigeBeleggingen, "51/53", "OtherCurrentInvestments");
         }
 
         @Override
         public IDocumentBuilder addBALiquideMiddelen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BALiquideMiddelen, getStringFromCSVValues("54/58"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BALiquideMiddelen, getStringFromXBRL("CashBankHand"));
-            }
-            return this;
+            return addProperty(PropertyName.BALiquideMiddelen, "54/58", "CashBankHand");
         }
 
         @Override
         public IDocumentBuilder addBAOverlopendeRekeningen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BAOverlopendeRekeningen, getStringFromCSVValues("490/1"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BAOverlopendeRekeningen, getStringFromXBRL("DeferredChargesAccruedIncome"));
-            }
-            return this;
+            return addProperty(PropertyName.BAOverlopendeRekeningen, "490/1", "DeferredChargesAccruedIncome");
         }
 
         @Override
         public IDocumentBuilder addBATotaalActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BATotaalActiva, getStringFromCSVValues("20/58"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BATotaalActiva, getStringFromXBRL("Assets"));
-            }
-            return this;
+            return addProperty(PropertyName.BATotaalActiva, "20/58", "Assets");
         }
 
         @Override
         public IDocumentBuilder addBPEigenVermogen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPEigenVermogen, getStringFromCSVValues("10/15"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPEigenVermogen, getStringFromXBRL("Equity"));
-            }
-            return this;
+            return addProperty(PropertyName.BPEigenVermogen, "10/15", "Equity");
         }
 
         @Override
         public IDocumentBuilder addBPKapitaal() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPKapitaal, getStringFromCSVValues("10"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPKapitaal, getStringFromXBRL("Capital"));
-            }
-            return this;
+            return addProperty(PropertyName.BPKapitaal, "10", "Capital");
         }
 
         @Override
         public IDocumentBuilder addBPKapitaalGeplaatst() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPKapitaalGeplaatst, getStringFromCSVValues("100"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPKapitaalGeplaatst, getStringFromXBRL("IssuedCapital"));
-            }
-            return this;
+            return addProperty(PropertyName.BPKapitaalGeplaatst, "100", "IssuedCapital");
         }
 
         @Override
         public IDocumentBuilder addBPKapitaalNietOpgevraagd() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPKapitaalNietOpgevraagd, getStringFromCSVValues("101"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPKapitaalNietOpgevraagd, getStringFromXBRL("UncalledCapital"));
-            }
-            return this;
+            return addProperty(PropertyName.BPKapitaalNietOpgevraagd, "101", "UncalledCapital");
         }
 
         @Override
         public IDocumentBuilder addBPUitgiftepremies() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPUitgiftepremies, getStringFromCSVValues("1100/10"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPUitgiftepremies, getStringFromXBRL("SharePremiumAccount"));
-            }
-            return this;
+            return addProperty(PropertyName.BPUitgiftepremies, "1100/10", "SharePremiumAccount");
         }
 
         @Override
         public IDocumentBuilder addBPHerwaarderingsmeerwaarden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPHerwaarderingsmeerwaarden, getStringFromCSVValues("12"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPHerwaarderingsmeerwaarden, getStringFromXBRL("RevaluationSurpluses"));
-            }
-            return this;
+            return addProperty(PropertyName.BPHerwaarderingsmeerwaarden, "12", "RevaluationSurpluses");
         }
 
         @Override
         public IDocumentBuilder addBPReserves() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPReserves, getStringFromCSVValues("13"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPReserves, getStringFromXBRL("Reserves"));
-            }
-            return this;
+            return addProperty(PropertyName.BPReserves, "13", "Reserves");
         }
 
         @Override
         public IDocumentBuilder addBPReservesWettelijkeReserve() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPReservesWettelijkeReserve, getStringFromCSVValues("130"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPReservesWettelijkeReserve,
-                            getStringFromXBRL("DifferentCategoriesSharesValue"));
-            }
-            return this;
+            return addProperty(PropertyName.BPReservesWettelijkeReserve, "130", "DifferentCategoriesSharesValue");
         }
 
         @Override
         public IDocumentBuilder addBPReservesOnbeschikbareReserves() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPReservesOnbeschikbareReserves, getStringFromCSVValues("130/1"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPReservesOnbeschikbareReserves, getStringFromXBRL("ReservesNotAvailable"));
-            }
-            return this;
+            return addProperty(PropertyName.BPReservesOnbeschikbareReserves, "130/1", "ReservesNotAvailable");
         }
 
         @Override
         public IDocumentBuilder addBPReservesOnbeschikbareReservesEigenAandelen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPReservesOnbeschikbareReservesEigenAandelen, getStringFromCSVValues("1312"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPReservesOnbeschikbareReservesEigenAandelen,
-                            getStringFromXBRL("ReservesNotAvailableOwnSharesHeld"));
-            }
-            return this;
+            return addProperty(PropertyName.BPReservesOnbeschikbareReservesEigenAandelen, "1312", "ReservesNotAvailableOwnSharesHeld");
         }
 
         @Override
         public IDocumentBuilder addBPReservesOnbeschikbareReservesAndere() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPReservesOnbeschikbareReservesAndere, getStringFromCSVValues("1319"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPReservesOnbeschikbareReservesAndere,
-                            getStringFromXBRL("OtherReservesNotAvailable"));
-            }
-            return this;
+            return addProperty(PropertyName.BPReservesOnbeschikbareReservesAndere, "1319", "OtherReservesNotAvailable");
         }
 
         @Override
         public IDocumentBuilder addBPReservesBelastingvrijeReserves() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPReservesBelastingvrijeReserves, getStringFromCSVValues("132"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPReservesBelastingvrijeReserves, getStringFromXBRL("UntaxedReserves"));
-            }
-            return this;
+            return addProperty(PropertyName.BPReservesBelastingvrijeReserves, "132", "UntaxedReserves");
         }
 
         @Override
         public IDocumentBuilder addBPReservesBeschikbareReserves() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPReservesBeschikbareReserves, getStringFromCSVValues("133"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPReservesBeschikbareReserves, getStringFromXBRL("AvailableReserves"));
-            }
-            return this;
+            return addProperty(PropertyName.BPReservesBeschikbareReserves, "133", "AvailableReserves");
         }
 
         @Override
         public IDocumentBuilder addBPOvergedragenWinstVerlies() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPOvergedragenWinstVerlies, getStringFromCSVValues("14"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPOvergedragenWinstVerlies, getStringFromXBRL("AccumulatedProfitsLosses"));
-            }
-            return this;
+            return addProperty(PropertyName.BPOvergedragenWinstVerlies, "14", "AccumulatedProfitsLosses");
         }
 
         @Override
         public IDocumentBuilder addBPKapitaalSubsidies() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPKapitaalSubsidies, getStringFromCSVValues("15"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPKapitaalSubsidies, getStringFromXBRL("InvestmentGrants"));
-            }
-            return this;
+            return addProperty(PropertyName.BPKapitaalSubsidies, "15", "InvestmentGrants");
         }
 
         @Override
         public IDocumentBuilder addBPVoorschotVennotenVerdelingNettoActief() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPVoorschotVennotenVerdelingNettoActief, getStringFromCSVValues("19"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPVoorschotVennotenVerdelingNettoActief,
-                            getStringFromXBRL("AdvanceAssociatesSharingOutAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.BPVoorschotVennotenVerdelingNettoActief, "19", "AdvanceAssociatesSharingOutAssets");
         }
 
         @Override
         public IDocumentBuilder addBPVoorzieningenUitgesteldeBelastingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPVoorzieningenUitgesteldeBelastingen, getStringFromCSVValues("16"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPVoorzieningenUitgesteldeBelastingen,
-                            getStringFromXBRL("ProvisionsDeferredTaxes"));
-            }
-            return this;
+            return addProperty(PropertyName.BPVoorzieningenUitgesteldeBelastingen, "16", "ProvisionsDeferredTaxes");
         }
 
         @Override
         public IDocumentBuilder addBPVoorzieningenRisicosKosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKosten, getStringFromCSVValues("160/5"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKosten,
-                            getStringFromXBRL("ProvisionLiabilitiesCharges"));
-
-            }
-            return this;
+            return addProperty(PropertyName.BPVoorzieningenRisicosKosten, "160/5", "ProvisionLiabilitiesCharges");
         }
 
         @Override
         public IDocumentBuilder addBPVoorzieningenRisicosKostenPensioenenSoortelijkeVerplichtingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenPensioenenSoortelijkeVerplichtingen, getStringFromCSVValues("160"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenPensioenenSoortelijkeVerplichtingen,
-                            getStringFromXBRL("ProvisionsPensionsSimilarObligations"));
-            }
-            return this;
+            return addProperty(PropertyName.BPVoorzieningenRisicosKostenPensioenenSoortelijkeVerplichtingen, "160", "ProvisionsPensionsSimilarObligations");
         }
 
         @Override
         public IDocumentBuilder addBPVoorzieningenRisicosKostenFiscaleLasten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenFiscaleLasten, getStringFromCSVValues("161"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenFiscaleLasten,
-                            getStringFromXBRL("ProvisionsTaxation"));
-            }
-            return this;
+            return addProperty(PropertyName.BPVoorzieningenRisicosKostenFiscaleLasten, "161", "ProvisionsTaxation");
         }
 
         @Override
         public IDocumentBuilder addBPVoorzieningenRisicosKostenGroteHerstellingsOnderhoudswerken() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenGroteHerstellingsOnderhoudswerken, getStringFromCSVValues("162"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenGroteHerstellingsOnderhoudswerken,
-                            getStringFromXBRL("ProvisionsMajorRepairsMaintenance"));
-            }
-            return this;
+            return addProperty(PropertyName.BPVoorzieningenRisicosKostenGroteHerstellingsOnderhoudswerken, "162", "ProvisionsMajorRepairsMaintenance");
         }
 
         @Override
         public IDocumentBuilder addBPVoorzieningenRisicosKostenMilieuverplichtingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenMilieuverplichtingen, getStringFromCSVValues("163"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenMilieuverplichtingen,
-                            getStringFromXBRL("ProvisionsOtherLiabilitiesCharges"));
-            }
-            return this;
+            return addProperty(PropertyName.BPVoorzieningenRisicosKostenMilieuverplichtingen, "163", "ProvisionsOtherLiabilitiesCharges");
         }
 
         @Override
         public IDocumentBuilder addBPVoorzieningenRisicosKostenOverige() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenOverige, getStringFromCSVValues("164/5"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPVoorzieningenRisicosKostenOverige, getStringFromXBRL("DeferredTaxes"));
-            }
-            return this;
+            return addProperty(PropertyName.BPVoorzieningenRisicosKostenOverige, "164/5", "DeferredTaxes");
         }
 
         @Override
         public IDocumentBuilder addBPSchulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchulden, getStringFromCSVValues("17/49"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchulden, getStringFromXBRL("AmountsPayable"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchulden, "17/49", "AmountsPayable");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1Jaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1Jaar, getStringFromCSVValues("17"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1Jaar, getStringFromXBRL("AmountsPayableMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1Jaar, "17", "AmountsPayableMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarFinancieleSchulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchulden, getStringFromCSVValues("170/4"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchulden,
-                            getStringFromXBRL("FinancialDebtsRemainingTermMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarFinancieleSchulden, "170/4", "FinancialDebtsRemainingTermMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarFinancieleSchuldenAchtergesteldeLeningen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenAchtergesteldeLeningen, getStringFromCSVValues("170"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenAchtergesteldeLeningen,
-                            getStringFromXBRL("SubordinatedLoansRemainingTermMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenAchtergesteldeLeningen, "170", "SubordinatedLoansRemainingTermMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarFinancieleSchuldenNietAchtergesteldeObligatieleningen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenNietAchtergesteldeObligatieleningen, getStringFromCSVValues("171"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenNietAchtergesteldeObligatieleningen,
-                            getStringFromXBRL("UnsubordinatedDebenturesRemainingTermMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenNietAchtergesteldeObligatieleningen, "171", "UnsubordinatedDebenturesRemainingTermMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarFinancieleSchuldenLeasingschuldenSoortgelijkeSchulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenLeasingschuldenSoortgelijkeSchulden, getStringFromCSVValues("172"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenLeasingschuldenSoortgelijkeSchulden,
-                            getStringFromXBRL("LeasingSimilarObligationsRemainingTermMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenLeasingschuldenSoortgelijkeSchulden, "172", "LeasingSimilarObligationsRemainingTermMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarFinancieleSchuldenKredietinstellingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenKredietinstellingen, getStringFromCSVValues("173"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenKredietinstellingen,
-                            getStringFromXBRL("AmountsPayableMoreOneYearCreditInstitutions"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenKredietinstellingen, "173", "AmountsPayableMoreOneYearCreditInstitutions");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarFinancieleSchuldenOverigeLeningen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenOverigeLeningen, getStringFromCSVValues("174"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenOverigeLeningen,
-                            getStringFromXBRL("OtherLoansRemainingTermMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarFinancieleSchuldenOverigeLeningen, "174", "OtherLoansRemainingTermMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarHandelsschulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarHandelsschulden, getStringFromCSVValues("175"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarHandelsschulden,
-                            getStringFromXBRL("TradeDebtsPayableMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarHandelsschulden, "175", "TradeDebtsPayableMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarHandelsschuldenTeBetalenWissels() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarHandelsschuldenTeBetalenWissels, getStringFromCSVValues("1751"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarHandelsschuldenTeBetalenWissels,
-                            getStringFromXBRL("BillExchangeMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarHandelsschuldenTeBetalenWissels, "1751", "BillExchangeMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarOntvangenVooruitbetalingenBestellingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarOntvangenVooruitbetalingenBestellingen, getStringFromCSVValues("176"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarOntvangenVooruitbetalingenBestellingen,
-                            getStringFromXBRL("AdvancesReceivedContractsProgressWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarOntvangenVooruitbetalingenBestellingen, "176", "AdvancesReceivedContractsProgressWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenMeer1JaarOverigeSchulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarOverigeSchulden, getStringFromCSVValues("178/9"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenMeer1JaarOverigeSchulden,
-                            getStringFromXBRL("OtherAmountsPayableMoreOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenMeer1JaarOverigeSchulden, "178/9", "OtherAmountsPayableMoreOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1Jaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1Jaar, getStringFromCSVValues("42/48"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1Jaar, getStringFromXBRL("AmountsPayableWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1Jaar, "42/48", "AmountsPayableWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarSchuldenMeer1JaarBinnenJaarVervallen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarSchuldenMeer1JaarBinnenJaarVervallen, getStringFromCSVValues("42"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarSchuldenMeer1JaarBinnenJaarVervallen,
-                            getStringFromXBRL("CurrentPortionAmountsPayableMoreOneYearFallingDueWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarSchuldenMeer1JaarBinnenJaarVervallen, "42", "CurrentPortionAmountsPayableMoreOneYearFallingDueWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarFinancieleSchulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchulden, getStringFromCSVValues("43"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchulden,
-                            getStringFromXBRL("FinancialDebtsPayableWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchulden, "43", "FinancialDebtsPayableWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarFinancieleSchuldenKredietinstellingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchuldenKredietinstellingen, getStringFromCSVValues("430/8"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchuldenKredietinstellingen,
-                            getStringFromXBRL("AmountsPayableWithinOneYearCreditInstitutions"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchuldenKredietinstellingen, "430/8", "AmountsPayableWithinOneYearCreditInstitutions");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarFinancieleSchuldenOverigeLeningen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchuldenOverigeLeningen, getStringFromCSVValues("439"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchuldenOverigeLeningen,
-                            getStringFromXBRL("OtherLoansPayableWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarFinancieleSchuldenOverigeLeningen, "439", "OtherLoansPayableWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarHandelsschulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarHandelsschulden, getStringFromCSVValues("44"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarHandelsschulden,
-                            getStringFromXBRL("TradeDebtsPayableWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarHandelsschulden, "44", "TradeDebtsPayableWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarHandelsschuldenLeveranciers() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarHandelsschuldenLeveranciers, getStringFromCSVValues("440/4"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarHandelsschuldenLeveranciers,
-                            getStringFromXBRL("SuppliersInvoicesToReceiveWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarHandelsschuldenLeveranciers, "440/4", "SuppliersInvoicesToReceiveWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarHandelsschuldenTeBetalenWissels() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarHandelsschuldenTeBetalenWissels, getStringFromCSVValues("441"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarHandelsschuldenTeBetalenWissels,
-                            getStringFromXBRL("BillExchangePayableWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarHandelsschuldenTeBetalenWissels, "441", "BillExchangePayableWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarOntvangenVooruitbetalingenBestellingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarOntvangenVooruitbetalingenBestellingen, getStringFromCSVValues("46"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarOntvangenVooruitbetalingenBestellingen,
-                            getStringFromXBRL("AdvancesReceivedContractsProgressWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarOntvangenVooruitbetalingenBestellingen, "46", "AdvancesReceivedContractsProgressWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLasten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLasten, getStringFromCSVValues("45"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLasten,
-                            getStringFromXBRL("TaxesRemunerationSocialSecurity"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLasten, "45", "TaxesRemunerationSocialSecurity");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBelastingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBelastingen, getStringFromCSVValues("450/3"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBelastingen,
-                            getStringFromXBRL("Taxes"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBelastingen, "450/3", "Taxes");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBezoldigingenSocialeLasten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBezoldigingenSocialeLasten, getStringFromCSVValues("454/9"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBezoldigingenSocialeLasten,
-                            getStringFromXBRL("RemunerationSocialSecurity"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarSchuldenBelastingenBezoldigingenSocialeLastenBezoldigingenSocialeLasten, "454/9", "RemunerationSocialSecurity");
         }
 
         @Override
         public IDocumentBuilder addBPSchuldenHoogstens1JaarOverigeSchulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarOverigeSchulden, getStringFromCSVValues("47/48"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPSchuldenHoogstens1JaarOverigeSchulden,
-                            getStringFromXBRL("OtherAmountsPayableWithinOneYear"));
-            }
-            return this;
+            return addProperty(PropertyName.BPSchuldenHoogstens1JaarOverigeSchulden, "47/48", "OtherAmountsPayableWithinOneYear");
         }
 
         @Override
         public IDocumentBuilder addBPOverlopendeRekeningen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPOverlopendeRekeningen, getStringFromCSVValues("492/3"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPOverlopendeRekeningen, getStringFromXBRL("AccruedChargesDeferredIncome"));
-            }
-            return this;
+            return addProperty(PropertyName.BPOverlopendeRekeningen, "492/3", "AccruedChargesDeferredIncome");
         }
 
         @Override
         public IDocumentBuilder addBPTotaalPassiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BPTotaalPassiva, getStringFromCSVValues("10/49"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BPTotaalPassiva, getStringFromXBRL("EquityLiabilities"));
-            }
-            return this;
+            return addProperty(PropertyName.BPTotaalPassiva, "10/49", "EquityLiabilities");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfsopbrengsten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfsopbrengsten, getStringFromCSVValues("70/76A"));
-                    break;
-                case XBRL:
-                    String bedrijfsOpbrengsten = getStringFromXBRL("OperatingIncomeNonRecurringOperatingIncomeIncluded");
-                    if (bedrijfsOpbrengsten.equals("0")) {
-                        bedrijfsOpbrengsten = getStringFromXBRL("OperatingIncome");
-                    }
-                    properties.replace(PropertyName.RRBedrijfsopbrengsten, bedrijfsOpbrengsten);
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfsopbrengsten, "70/76A", "OperatingIncomeNonRecurringOperatingIncomeIncluded", "OperatingIncome");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfsopbrengstenOmzet() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenOmzet, getStringFromCSVValues("70"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenOmzet, getStringFromXBRL("Turnover"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfsopbrengstenOmzet, "70", "Turnover");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfsopbrengstenToenameAfnameVoorraadGoederenBewerkingGereedProductBestellingenUitvoering() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenToenameAfnameVoorraadGoederenBewerkingGereedProductBestellingenUitvoering, getStringFromCSVValues("71"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.RRBedrijfsopbrengstenToenameAfnameVoorraadGoederenBewerkingGereedProductBestellingenUitvoering,
-                            getStringFromXBRL("IncreaseDecreaseStocksWorkContractsProgress"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfsopbrengstenToenameAfnameVoorraadGoederenBewerkingGereedProductBestellingenUitvoering, "71", "IncreaseDecreaseStocksWorkContractsProgress");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfsopbrengstenGeproduceerdeVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenGeproduceerdeVasteActiva, getStringFromCSVValues("72"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenGeproduceerdeVasteActiva,
-                            getStringFromXBRL("OwnConstructionCapitalised"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfsopbrengstenGeproduceerdeVasteActiva, "72", "OwnConstructionCapitalised");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfsopbrengstenAndereBedrijfsopbrengsten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenAndereBedrijfsopbrengsten, getStringFromCSVValues("74"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenAndereBedrijfsopbrengsten,
-                            getStringFromXBRL("OtherOperatingIncome"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfsopbrengstenAndereBedrijfsopbrengsten, "74", "OtherOperatingIncome");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengsten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengsten, getStringFromCSVValues("76A"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengsten,
-                            getStringFromXBRL("NonRecurringOperatingIncome"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfsopbrengstenNietRecurrenteBedrijfsopbrengsten, "76A", "NonRecurringOperatingIncome");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskosten, getStringFromCSVValues("60/66A"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskosten,
-                            getStringFromXBRL("OperatingChargesNonRecurringOperatingChargesIncluded"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskosten, "60/66A", "OperatingChargesNonRecurringOperatingChargesIncluded");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenHandelsgoederenGrondHulpstoffen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffen, getStringFromCSVValues("60"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffen,
-                            getStringFromXBRL("RawMaterialsConsumables"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffen, "60", "RawMaterialsConsumables");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen, getStringFromCSVValues("600/8"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen,
-                            getStringFromXBRL("PurchasesRawMaterialsConsumables"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffenAankopen, "600/8", "PurchasesRawMaterialsConsumables");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename, getStringFromCSVValues("609"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename,
-                            getStringFromXBRL("IncreaseDecreaseStocks"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenHandelsgoederenGrondHulpstoffenVoorraadAfnameToename, "609", "IncreaseDecreaseStocks");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenDienstenDiverseGoederen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenDienstenDiverseGoederen, getStringFromCSVValues("61"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenDienstenDiverseGoederen,
-                            getStringFromXBRL("ServicesOtherGoods"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenDienstenDiverseGoederen, "61", "ServicesOtherGoods");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenBezoldigingenSocialeLastenPensioenen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenBezoldigingenSocialeLastenPensioenen, getStringFromCSVValues("62"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenBezoldigingenSocialeLastenPensioenen,
-                            getStringFromXBRL("RemunerationSocialSecurityPensions"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenBezoldigingenSocialeLastenPensioenen, "62", "RemunerationSocialSecurityPensions");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva, getStringFromCSVValues("630"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.RRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva,
-                            getStringFromXBRL(
-                                    "DepreciationOtherAmountsWrittenDownFormationExpensesIntangibleTangibleFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenAfschrijvingenWaardeverminderingenOprichtingskostenImmaterieleMaterieleVasteActiva, "630", "DepreciationOtherAmountsWrittenDownFormationExpensesIntangibleTangibleFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingen, getStringFromCSVValues("631/4"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.RRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingen,
-                            getStringFromXBRL("AmountsWrittenDownStocksContractsProgressTradeDebtorsAppropriationsWriteBacks"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenWaardeverminderingenVoorradenBestellingenUitvoeringHandelsvorderingenToevoegingenTerugnemingen, "631/4", "AmountsWrittenDownStocksContractsProgressTradeDebtorsAppropriationsWriteBacks");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingen, getStringFromCSVValues("635/8"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.RRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingen,
-                            getStringFromXBRL("ProvisionsRisksChargesAppropriationsWriteBacks"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenVoorzieningenRisicosKostenToevoegingenBestedingenTerugnemingen, "635/8", "ProvisionsRisksChargesAppropriationsWriteBacks");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenAndereBedrijfskosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenAndereBedrijfskosten, getStringFromCSVValues("640/8"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenAndereBedrijfskosten,
-                            getStringFromXBRL("MiscellaneousOperatingCharges"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenAndereBedrijfskosten, "640/8", "MiscellaneousOperatingCharges");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenHerstructureringskostenGeactiveerdeBedrijfskosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenHerstructurerngskostenGeactiveerdeBedrijfskosten, getStringFromCSVValues("649"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenHerstructurerngskostenGeactiveerdeBedrijfskosten,
-                            getStringFromXBRL("OperatingChargesCarriedAssetsRestructuringCosts"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenHerstructurerngskostenGeactiveerdeBedrijfskosten, "649", "OperatingChargesCarriedAssetsRestructuringCosts");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenNietRecurrenteBedrijfskosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenNietRecurrenteBedrijfskosten, getStringFromCSVValues("66A"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenNietRecurrenteBedrijfskosten,
-                            getStringFromXBRL("NonRecurringOperatingCharges"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenNietRecurrenteBedrijfskosten, "66A", "NonRecurringOperatingCharges");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfskostenUitzonderlijkeKosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfskostenUitzonderlijkeKosten, getStringFromCSVValues("66"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfskostenUitzonderlijkeKosten,
-                            getStringFromXBRL("ExtraordinaryCharges"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfskostenUitzonderlijkeKosten, "66", "ExtraordinaryCharges");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfsopbrengstenUitzonderlijkeOpbrengsten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenUitzonderlijkeOpbrengsten, getStringFromCSVValues("76"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfsopbrengstenUitzonderlijkeOpbrengsten,
-                            getStringFromXBRL("ExtraordinaryIncome"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfsopbrengstenUitzonderlijkeOpbrengsten, "76", "ExtraordinaryIncome");
         }
 
         @Override
         public IDocumentBuilder addRRBedrijfsWinstVerlies() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBedrijfsWinstVerlies, getStringFromCSVValues("9901"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBedrijfsWinstVerlies, getStringFromXBRL("OperatingProfitLoss"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBedrijfsWinstVerlies, "9901", "OperatingProfitLoss");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleOpbrengsten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleOpbrengsten, getStringFromCSVValues("75/76B"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleOpbrengsten,
-                            getStringFromXBRL("FinancialIncomeNonRecurringFinancialIncomeIncluded"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleOpbrengsten, "75/76B", "FinancialIncomeNonRecurringFinancialIncomeIncluded");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleOpbrengstenRecurrent() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenRecurrent, getStringFromCSVValues("75"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenRecurrent, getStringFromXBRL("FinancialIncome"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleOpbrengstenRecurrent, "75", "FinancialIncome");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleOpbrengstenRecurrentOpbrengstenFinancieleVasteActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenRecurrentOpbrengstenFinancieleVasteActiva, getStringFromCSVValues("750"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenRecurrentOpbrengstenFinancieleVasteActiva,
-                            getStringFromXBRL("IncomeFinancialFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleOpbrengstenRecurrentOpbrengstenFinancieleVasteActiva, "750", "IncomeFinancialFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleOpbrengstenRecurrentOpbrengstenVlottendeActiva() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenRecurrentOpbrengstenVlottendeActiva, getStringFromCSVValues("751"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenRecurrentOpbrengstenVlottendeActiva,
-                            getStringFromXBRL("IncomeCurrentAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleOpbrengstenRecurrentOpbrengstenVlottendeActiva, "751", "IncomeCurrentAssets");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleOpbrengstenRecurrentAndereFinancieleOpbrengsten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenRecurrentAndereFinancieleOpbrengsten, getStringFromCSVValues("752/9"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenRecurrentAndereFinancieleOpbrengsten,
-                            getStringFromXBRL("OtherFinancialIncome"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleOpbrengstenRecurrentAndereFinancieleOpbrengsten, "752/9", "OtherFinancialIncome");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleOpbrengstenNietRecurrent() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenNietRecurrent, getStringFromCSVValues("76B"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleOpbrengstenNietRecurrent,
-                            getStringFromXBRL("NonRecurringFinancialIncome"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleOpbrengstenNietRecurrent, "76B", "NonRecurringFinancialIncome");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleKosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleKosten, getStringFromCSVValues("65/66B"));
-                    break;
-                case XBRL:
-                    String financieleKosten = getStringFromXBRL("FinancialChargesNonRecurringFinancialChargesIncluded");
-                    if (financieleKosten.equals("0")) {
-                        financieleKosten = getStringFromXBRL("FinancialCharges");
-                    }
-                    properties.replace(PropertyName.RRFinancieleKosten, financieleKosten);
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleKosten, "65/66B", "FinancialChargesNonRecurringFinancialChargesIncluded", "FinancialCharges");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleKostenRecurrent() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleKostenRecurrent, getStringFromCSVValues("65"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleKostenRecurrent, getStringFromXBRL("FinancialCharges"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleKostenRecurrent, "65", "FinancialCharges");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleKostenRecurrentKostenSchulden() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleKostenRecurrentKostenSchulden, getStringFromCSVValues("650"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleKostenRecurrentKostenSchulden,
-                            getStringFromXBRL("DebtCharges"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleKostenRecurrentKostenSchulden, "650", "DebtCharges");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleKostenRecurrentWaardeverminderingenVlottendeActivaAndereVoorradenBestellingenUitvoeringHandelvorderingenToevoegingenTerugnemingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleKostenRecurrentWaardeverminderingenVlottendeActivaAndereVoorradenBestellingenUitvoeringHandelvorderingenToevoegingenTerugnemingen, getStringFromCSVValues("651"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.RRFinancieleKostenRecurrentWaardeverminderingenVlottendeActivaAndereVoorradenBestellingenUitvoeringHandelvorderingenToevoegingenTerugnemingen,
-                            getStringFromXBRL("ProvisionsRisksChargesAppropriationsWriteBacks"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleKostenRecurrentWaardeverminderingenVlottendeActivaAndereVoorradenBestellingenUitvoeringHandelvorderingenToevoegingenTerugnemingen, "651", "ProvisionsRisksChargesAppropriationsWriteBacks");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleKostenRecurrentAndereFinancieleKosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleKostenRecurrentAndereFinancieleKosten, getStringFromCSVValues("652/9"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleKostenRecurrentAndereFinancieleKosten,
-                            getStringFromXBRL("OtherFinancialCharges"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleKostenRecurrentAndereFinancieleKosten, "652/9", "OtherFinancialCharges");
         }
 
         @Override
         public IDocumentBuilder addRRFinancieleKostenNietRecurrent() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRFinancieleKostenNietRecurrent, getStringFromCSVValues("66B"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRFinancieleKostenNietRecurrent,
-                            getStringFromXBRL("NonRecurringFinancialCharges"));
-            }
-            return this;
+            return addProperty(PropertyName.RRFinancieleKostenNietRecurrent, "66B", "NonRecurringFinancialCharges");
         }
 
         @Override
         public IDocumentBuilder addRRWinstVerliesBoekjaarVoorBelastingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRWinstVerliesBoekjaarVoorBelastingen, getStringFromCSVValues("9903"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRWinstVerliesBoekjaarVoorBelastingen,
-                            getStringFromXBRL("GainLossBeforeTaxes"));
-            }
-            return this;
+            return addProperty(PropertyName.RRWinstVerliesBoekjaarVoorBelastingen, "9903", "GainLossBeforeTaxes");
         }
 
         @Override
         public IDocumentBuilder addRROntrekkingenUitgesteldeBelastingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RROntrekkingenUitgesteldeBelastingen, getStringFromCSVValues("780"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RROntrekkingenUitgesteldeBelastingen,
-                            getStringFromXBRL("TransferFromDeferredTaxes"));
-            }
-            return this;
+            return addProperty(PropertyName.RROntrekkingenUitgesteldeBelastingen, "780", "TransferFromDeferredTaxes");
         }
 
         @Override
         public IDocumentBuilder addRROverboekingUitgesteldeBelastingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RROverboekingUitgesteldeBelastingen, getStringFromCSVValues("680"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RROverboekingUitgesteldeBelastingen,
-                            getStringFromXBRL("TransferToDeferredTaxes"));
-            }
-            return this;
+            return addProperty(PropertyName.RROverboekingUitgesteldeBelastingen, "680", "TransferToDeferredTaxes");
         }
 
         @Override
         public IDocumentBuilder addRRBelastingenOpResultaat() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBelastingenOpResultaat, getStringFromCSVValues("67/77"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBelastingenOpResultaat, getStringFromXBRL("IncomeTaxes"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBelastingenOpResultaat, "67/77", "IncomeTaxes");
         }
 
         @Override
         public IDocumentBuilder addRRBelastingenOpResultaatBelastingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBelastingenOpResultaatBelastingen, getStringFromCSVValues("670/3"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRBelastingenOpResultaatBelastingen,
-                            getStringFromXBRL("BelgianForeignIncomeTaxes"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBelastingenOpResultaatBelastingen, "670/3", "BelgianForeignIncomeTaxes");
         }
 
         @Override
         public IDocumentBuilder addRRBelastingenOpResultaatRegulariseringBelastingenTerugnemingVoorzieningenBelastingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRBelastingenOpResultaatRegulariseringBelastingenTerugnemingVoorzieningenBelastingen, getStringFromCSVValues("77"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.RRBelastingenOpResultaatRegulariseringBelastingenTerugnemingVoorzieningenBelastingen,
-                            getStringFromXBRL("AdjustmentIncomeTaxesWriteBackTaxProvisions"));
-            }
-            return this;
+            return addProperty(PropertyName.RRBelastingenOpResultaatRegulariseringBelastingenTerugnemingVoorzieningenBelastingen, "77", "AdjustmentIncomeTaxesWriteBackTaxProvisions");
         }
 
         @Override
         public IDocumentBuilder addRRWinstVerliesBoekjaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRWinstVerliesBoekjaar, getStringFromCSVValues("9904"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRWinstVerliesBoekjaar, getStringFromXBRL("GainLossPeriod"));
-            }
-            return this;
+            return addProperty(PropertyName.RRWinstVerliesBoekjaar, "9904", "GainLossPeriod");
         }
 
         @Override
         public IDocumentBuilder addRROntrekkingBelastingvrijeReserves() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RROntrekkingBelastingvrijeReserves, getStringFromCSVValues("789"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RROntrekkingBelastingvrijeReserves,
-                            getStringFromXBRL("TransferFromUntaxedReserves"));
-
-            }
-            return this;
+            return addProperty(PropertyName.RROntrekkingBelastingvrijeReserves, "789", "TransferFromUntaxedReserves");
         }
 
         @Override
         public IDocumentBuilder addRROverboekingBelastingvrijeReserves() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RROverboekingBelastingvrijeReserves, getStringFromCSVValues("689"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RROverboekingBelastingvrijeReserves,
-                            getStringFromXBRL("TransferToUntaxedReserves"));
-            }
-            return this;
+            return addProperty(PropertyName.RROverboekingBelastingvrijeReserves, "689", "TransferToUntaxedReserves");
         }
 
         @Override
         public IDocumentBuilder addRRTeBestemmenWinstVerliesBoekjaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.RRTeBestemmenWinstVerliesBoekjaar, getStringFromCSVValues("9905"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.RRTeBestemmenWinstVerliesBoekjaar,
-                            getStringFromXBRL("GainLossToBeAppropriated"));
-            }
-            return this;
+            return addProperty(PropertyName.RRTeBestemmenWinstVerliesBoekjaar, "9905", "GainLossToBeAppropriated");
         }
 
         @Override
         public IDocumentBuilder addTLMVAConcessiesOctrooienLicentiesKnowhowMerkenSoortgelijkeRechtenMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLMVAConcessiesOctrooienLicentiesKnowhowMerkenSoortgelijkeRechtenMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8022"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.TLMVAConcessiesOctrooienLicentiesKnowhowMerkenSoortgelijkeRechtenMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL(
-                                    "ConcessionsPatentsLicencesSimilarRightsAcquisitionIncludingProducedFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.TLMVAConcessiesOctrooienLicentiesKnowhowMerkenSoortgelijkeRechtenMutatiesTijdensBoekjaarAanschaffingen, "8022",
+                    "ConcessionsPatentsLicencesSimilarRightsAcquisitionIncludingProducedFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addTLIMVAMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLIMVAMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8029"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.TLIMVAMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL("IntangibleFixedAssetsAcquisitionIncludingProducedFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.TLIMVAMutatiesTijdensBoekjaarAanschaffingen, "8029", "IntangibleFixedAssetsAcquisitionIncludingProducedFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addTLMVAMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLMVAMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8169"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.TLMVAMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL("TangibleFixedAssetsAcquisitionIncludingProducedFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.TLMVAMutatiesTijdensBoekjaarAanschaffingen, "8169", "TangibleFixedAssetsAcquisitionIncludingProducedFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addTLFVAMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLFVAMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8365"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.TLFVAMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL("FinancialFixedAssetsAcquisitionIncludingProducedFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.TLFVAMutatiesTijdensBoekjaarAanschaffingen, "8365", "FinancialFixedAssetsAcquisitionIncludingProducedFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addTLMVATerreinenEnGebouwenMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLMVATerreinenEnGebouwenMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8161"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.TLMVATerreinenEnGebouwenMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL("LandBuildingsAcquisitionIncludingProducedFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.TLMVATerreinenEnGebouwenMutatiesTijdensBoekjaarAanschaffingen, "8161", "LandBuildingsAcquisitionIncludingProducedFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addTLMVAInstallatiesMachinesUitrustingMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLMVAInstallatiesMachinesUitrustingMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8162"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.TLMVAInstallatiesMachinesUitrustingMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL("PlantMachineryEquipmentAcquisitionIncludingProducedFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.TLMVAInstallatiesMachinesUitrustingMutatiesTijdensBoekjaarAanschaffingen, "8162", "PlantMachineryEquipmentAcquisitionIncludingProducedFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addTLMVAMeubilairRollendMaterieelMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLMVAMeubilairRollendMaterieelMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8163"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.TLMVAMeubilairRollendMaterieelMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL("FurnitureVehiclesAcquisitionIncludingProducedFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.TLMVAMeubilairRollendMaterieelMutatiesTijdensBoekjaarAanschaffingen, "8163", "FurnitureVehiclesAcquisitionIncludingProducedFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addTLMVAOverigeMaterieleActivaMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLMVAOverigeMaterieleActivaMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8165"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.TLMVAOverigeMaterieleActivaMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL("OtherTangibleFixedAssetsAcquisitionIncludingProducedFixedAssets"));
-            }
-            return this;
+            return addProperty(PropertyName.TLMVAOverigeMaterieleActivaMutatiesTijdensBoekjaarAanschaffingen, "8165", "OtherTangibleFixedAssetsAcquisitionIncludingProducedFixedAssets");
         }
 
         @Override
         public IDocumentBuilder addTLFVAOndernemingenDeelnemingsverhoudingMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLFVAOndernemingenDeelnemingsverhoudingMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8362"));
-                    break;
-                case XBRL:
-                    properties.replace(
-                            PropertyName.TLFVAOndernemingenDeelnemingsverhoudingMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL(
-                                    "ParticipatingInterestsSharesEnterprisesLinkedParticipatingInterestAcquisitions"));
-            }
-            return this;
+            return addProperty(PropertyName.TLFVAOndernemingenDeelnemingsverhoudingMutatiesTijdensBoekjaarAanschaffingen, "8362", "ParticipatingInterestsSharesEnterprisesLinkedParticipatingInterestAcquisitions");
         }
 
         @Override
         public IDocumentBuilder addTLFVAAndereOndernemingenMutatiesTijdensBoekjaarAanschaffingen() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.TLFVAAndereOndernemingenMutatiesTijdensBoekjaarAanschaffingen, getStringFromCSVValues("8363"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.TLFVAAndereOndernemingenMutatiesTijdensBoekjaarAanschaffingen,
-                            getStringFromXBRL("OtherParticipatingInterestsSharesAcquisitions"));
-            }
-            return this;
+            return addProperty(PropertyName.TLFVAAndereOndernemingenMutatiesTijdensBoekjaarAanschaffingen, "8363", "OtherParticipatingInterestsSharesAcquisitions");
         }
 
         @Override
         public IDocumentBuilder addSBGemiddeldeFTE() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBGemiddeldeFTE, getStringFromCSVValues("9087"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBGemiddeldeFTE,
-                            getStringFromXBRL("AverageNumberEmployeesPersonnelRegisterTotalFullTimeEquivalents"));
-            }
-            return this;
+            return addProperty(PropertyName.SBGemiddeldeFTE, "9087", "AverageNumberEmployeesPersonnelRegisterTotalFullTimeEquivalents");
         }
 
         @Override
         public IDocumentBuilder addSBGepresteerdeUren() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBGepresteerdeUren, getStringFromCSVValues("9088"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBGepresteerdeUren, getStringFromXBRL("NumberHoursActuallyWorkedTotal"));
-            }
-            return this;
+            return addProperty(PropertyName.SBGepresteerdeUren, "9088", "NumberHoursActuallyWorkedTotal");
         }
 
         @Override
         public IDocumentBuilder addSBGemiddeldAantalFTEUitzendkrachten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBGemiddeldAantalFTEUitzendkrachten, getStringFromCSVValues("9097"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBGemiddeldAantalFTEUitzendkrachten,
-                            getStringFromXBRL("HiredTemporaryStaffAverageNumberPersonsEmployed"));
-            }
-            return this;
+            return addProperty(PropertyName.SBGemiddeldAantalFTEUitzendkrachten, "9097", "HiredTemporaryStaffAverageNumberPersonsEmployed");
         }
 
         @Override
         public IDocumentBuilder addSBPersoneelskosten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBPersoneelskosten, getStringFromCSVValues("1023"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBPersoneelskosten, getStringFromXBRL("PersonnelCostsTotal"));
-            }
-            return this;
+            return addProperty(PropertyName.SBPersoneelskosten, "1023", "PersonnelCostsTotal");
         }
 
         @Override
         public IDocumentBuilder addSBGepresteerdeUrenUitzendkrachten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBGepresteerdeUrenUitzendkrachten, getStringFromCSVValues("9098"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBGepresteerdeUrenUitzendkrachten,
-                            getStringFromXBRL("HiredTemporaryStaffNumbersHoursActuallyWorked"));
-            }
-            return this;
+            return addProperty(PropertyName.SBGepresteerdeUrenUitzendkrachten, "9098", "HiredTemporaryStaffNumbersHoursActuallyWorked");
         }
 
         @Override
         public IDocumentBuilder addSBPersoneelskostenUitzendkrachten() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBPersoneelskostenUitzendkrachten, getStringFromCSVValues("617"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBPersoneelskostenUitzendkrachten,
-                            getStringFromXBRL("HiredTemporaryStaffCostsEnterprise"));
-            }
-            return this;
+            return addProperty(PropertyName.SBPersoneelskostenUitzendkrachten, "617", "HiredTemporaryStaffCostsEnterprise");
         }
 
         @Override
         public IDocumentBuilder addSBAantalWerknemersOpEindeBoekjaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBAantalWerknemersOpEindeBoekjaar, getStringFromCSVValues("1053"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBAantalWerknemersOpEindeBoekjaar, getStringFromXBRL(
-                            "NumberEmployeesPersonnelRegisterClosingDateFinancialYearTotalFullTimeEquivalents"));
-            }
-            return this;
+            return addProperty(PropertyName.SBAantalWerknemersOpEindeBoekjaar, "1053",
+                    "NumberEmployeesPersonnelRegisterClosingDateFinancialYearTotalFullTimeEquivalents");
         }
 
         @Override
         public IDocumentBuilder addSBAantalBediendenOpEindeBoekjaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBAantalBediendenOpEindeBoekjaar, getStringFromCSVValues("1343"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBAantalBediendenOpEindeBoekjaar, getStringFromXBRL(
-                            "NumberEmployeesPersonnelRegisterClosingDateFinancialYearEmployeesTotalFullTimeEquivalents"));
-            }
-            return this;
+            return addProperty(PropertyName.SBAantalBediendenOpEindeBoekjaar, "1343",
+                    "NumberEmployeesPersonnelRegisterClosingDateFinancialYearEmployeesTotalFullTimeEquivalents");
         }
 
         @Override
         public IDocumentBuilder addSBAantalArbeidersOpEindeBoekjaar() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.SBAantalArbeidersOpEindeBoekjaar, getStringFromCSVValues("1323"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.SBAantalArbeidersOpEindeBoekjaar, getStringFromXBRL(
-                            "NumberEmployeesPersonnelRegisterClosingDateFinancialYearWorkersTotalFullTimeEquivalents"));
-            }
-            return this;
+            return addProperty(PropertyName.SBAantalArbeidersOpEindeBoekjaar, "1323",
+                    "NumberEmployeesPersonnelRegisterClosingDateFinancialYearWorkersTotalFullTimeEquivalents");
         }
 
         @Override
         public IDocumentBuilder addBVBABrutomarge() {
-            switch (fileExtension) {
-                case CSV:
-                    properties.replace(PropertyName.BVBABrutomarge, getStringFromCSVValues("9900"));
-                    break;
-                case XBRL:
-                    properties.replace(PropertyName.BVBABrutomarge, getStringFromXBRL("GrossOperatingMargin"));
-            }
-            return this;
+            return addProperty(PropertyName.BVBABrutomarge, "9900", "GrossOperatingMargin");
         }
     }
 }

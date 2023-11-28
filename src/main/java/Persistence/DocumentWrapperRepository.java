@@ -89,7 +89,7 @@ public class DocumentWrapperRepository {
                 year = Integer.parseInt(document.getElementsByTagName("instant").item(0).getTextContent().substring(0, 4));
             }
             DocumentWrapper.DocumentBuilder docBuilder = new DocumentWrapper.DocumentBuilder(document, fileName, year, fileExtension);
-            if (!docBuilder.extractBusiness() || !docBuilder.extractCurrentTimePeriods()) {
+            if (docBuilder.extractBusiness() || !docBuilder.extractCurrentTimePeriods()) {
                 return null;
             }
             return docBuilder;
@@ -103,7 +103,7 @@ public class DocumentWrapperRepository {
         try {
             int year = Integer.parseInt(csvValues.get("Accounting period start date").substring(0, 4));
             DocumentWrapper.DocumentBuilder docBuilder = new DocumentWrapper.DocumentBuilder(csvValues, fileName, year, fileExtension);
-            if (!docBuilder.extractBusiness()) {
+            if (docBuilder.extractBusiness()) {
                 return null;
             }
             return docBuilder;
