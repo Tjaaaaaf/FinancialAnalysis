@@ -12,7 +12,7 @@ import java.io.IOException;
 public class StartScreenController extends BorderPane {
 
     //region Properties
-    private final DomainController domeincontroller;
+    private final DomainController domainController;
     //endregion
 
     //region FXMLProperties
@@ -31,7 +31,7 @@ public class StartScreenController extends BorderPane {
     //endregion
 
     //region Constructor
-    public StartScreenController(DomainController domeincontroller) {
+    public StartScreenController(DomainController domainController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/StartScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
@@ -41,14 +41,14 @@ public class StartScreenController extends BorderPane {
             throw new RuntimeException(ex);
         }
 
-        this.domeincontroller = domeincontroller;
+        this.domainController = domainController;
         buildGui();
     }
     //endregion
 
     //region BuildGUI
     private void buildGui() {
-        this.setCenter(new DocumentManagementScreenController(domeincontroller, this));
+        this.setCenter(new DocumentManagementScreenController(domainController, this));
     }
     //endregion
 

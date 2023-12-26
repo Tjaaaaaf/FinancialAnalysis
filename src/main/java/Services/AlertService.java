@@ -7,7 +7,8 @@ import javafx.stage.Window;
 
 public class AlertService {
 
-    public static void showAlert(String title, String headerText, String contentText, Window owner, AlertType type) {
+    public static void showAlert(
+            String title, String headerText, String contentText, Window owner, AlertType type) {
         Alert customAlert = new Alert(type);
 
         customAlert.initOwner(owner);

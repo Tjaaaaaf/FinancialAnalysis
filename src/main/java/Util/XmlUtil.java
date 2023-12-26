@@ -1,5 +1,8 @@
 package Util;
 
+import StartUp.StartApplication;
+import javafx.stage.Window;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -9,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -21,6 +25,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import Services.AlertService;
+import javafx.scene.control.Alert;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -65,14 +72,24 @@ public final class XmlUtil {
     private void checkForSource() {
         String sourceDir = String.format("%s//.financialAnalysis", System.getProperty("user.home"));
         String sourceFile = String.format("%s//.financialAnalysis//preferences.xml", System.getProperty("user.home"));
+
         File directoryFile = new File(sourceDir);
+
         if (!directoryFile.exists()) {
-            directoryFile.mkdir();
+            if (!directoryFile.mkdir())
+                AlertService.showAlert("Fout",
+                        "Instellingen map aanmaken mislukt", String.format("Het aanmaken van de map om de gebruikersinstellingen op te slaan is mislukt. (%s)", sourceDir),
+                        StartApplication.getScene().getWindow(), Alert.AlertType.ERROR);
         }
+
         File file = new File(sourceFile);
+
         if (!file.exists()) {
             try {
-                file.createNewFile();
+                if(!file.createNewFile())
+                    AlertService.showAlert("Fout",
+                            "Instelligen bestand aanmaken mislukt", String.format("Het aanmaken van het bestand om de gebruikersinstellingen in op te slaan is mislukt. (%s)", sourceFile),
+                            StartApplication.getScene().getWindow(), Alert.AlertType.ERROR);
 
                 OutputStream output = Files.newOutputStream(Paths.get(sourceFile), StandardOpenOption.CREATE);
                 String defaultString = "<preferences><defaultSource>C:\\</defaultSource><defaultOrigin>C:\\</defaultOrigin></preferences>";

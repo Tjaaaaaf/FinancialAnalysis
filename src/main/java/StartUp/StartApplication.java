@@ -7,15 +7,11 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class StartApplication extends Application {
+    private static Scene scene;
 
     @Override
     public void start(Stage stage) {
-        DomainController domeincontroller = new DomainController();
-
-        StartScreenController root = new StartScreenController(domeincontroller);
-
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/css/style.css").toString());
+        setupScene();
 
         stage.setTitle("FinancialAnalysis");
         stage.setScene(scene);
@@ -23,11 +19,21 @@ public class StartApplication extends Application {
         stage.setWidth(620);
         stage.setHeight(500);
         stage.show();
+    }
 
+    public static Scene getScene() {
+        setupScene();
+        return scene;
+    }
+
+    private static void setupScene() {
+        if (scene == null) {
+            scene = new Scene(new StartScreenController(new DomainController()));
+            scene.getStylesheets().add(StartApplication.class.getResource("/css/style.css").toString());
+        }
     }
 
     public void main(String[] args) {
         launch(args);
     }
-
 }

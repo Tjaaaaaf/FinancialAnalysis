@@ -4,8 +4,6 @@ import Models.Enums.FileExtension;
 import Models.Enums.PropertyName;
 import Models.Interfaces.IDocumentBuilder;
 import Models.Interfaces.IDocumentWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -19,25 +17,14 @@ import static Util.XmlUtil.asList;
 
 public class DocumentWrapper implements IDocumentWrapper {
 
-    private final String name;
-    private final SimpleStringProperty nameProperty;
     private final int year;
     private final Business business;
-    private final SimpleBooleanProperty selectedProperty;
     private final Map<PropertyName, String> properties;
 
     private DocumentWrapper(DocumentBuilder documentBuilder) {
-        this.name = documentBuilder.name;
         this.year = documentBuilder.year;
         this.business = documentBuilder.business;
         this.properties = documentBuilder.properties;
-        this.nameProperty = documentBuilder.nameProperty;
-        this.selectedProperty = documentBuilder.selectedProperty;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override
@@ -51,16 +38,6 @@ public class DocumentWrapper implements IDocumentWrapper {
     }
 
     @Override
-    public SimpleStringProperty getNameProperty() {
-        return nameProperty;
-    }
-
-    @Override
-    public SimpleBooleanProperty getSelectedProperty() {
-        return selectedProperty;
-    }
-
-    @Override
     public Map<PropertyName, String> getPropertiesMap() {
         return properties;
     }
@@ -68,11 +45,10 @@ public class DocumentWrapper implements IDocumentWrapper {
     public static class DocumentBuilder implements IDocumentBuilder {
 
         private final String name;
-        private final SimpleStringProperty nameProperty;
         private final int year;
         private Business business;
         private final Map<PropertyName, String> properties;
-        private SimpleBooleanProperty selectedProperty;
+        private final boolean selected;
         private Document document = null;
         private Map<String, String> csvValues = null;
         private ArrayList<String> currentTimePeriods;
@@ -82,8 +58,7 @@ public class DocumentWrapper implements IDocumentWrapper {
             this.document = document;
             this.name = fileName;
             this.year = year;
-            this.nameProperty = new SimpleStringProperty(fileName);
-            this.selectedProperty = new SimpleBooleanProperty(true);
+            this.selected = true;
             this.properties = new HashMap<>();
             for (PropertyName propName : PropertyName.values()) {
                 properties.put(propName, "0");
@@ -95,8 +70,7 @@ public class DocumentWrapper implements IDocumentWrapper {
             this.csvValues = csvValues;
             this.name = fileName;
             this.year = year;
-            this.nameProperty = new SimpleStringProperty(fileName);
-            this.selectedProperty = new SimpleBooleanProperty(true);
+            this.selected = true;
             this.properties = new HashMap<>();
             for (PropertyName propname : PropertyName.values()) {
                 properties.put(propname, "0");
@@ -170,10 +144,6 @@ public class DocumentWrapper implements IDocumentWrapper {
             }
         }
 
-        public void setSelectedProperty(SimpleBooleanProperty selectedProperty) {
-            this.selectedProperty = selectedProperty;
-        }
-
         @Override
         public String getName() {
             return name;
@@ -190,13 +160,8 @@ public class DocumentWrapper implements IDocumentWrapper {
         }
 
         @Override
-        public SimpleStringProperty getNameProperty() {
-            return nameProperty;
-        }
-
-        @Override
-        public SimpleBooleanProperty getSelectedProperty() {
-            return selectedProperty;
+        public boolean isSelected() {
+            return selected;
         }
 
         private String getStringFromXBRL(String tagName) {

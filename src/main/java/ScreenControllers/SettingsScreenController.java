@@ -75,10 +75,10 @@ public class SettingsScreenController extends VBox {
         companyType = chboxCompany.getSelectionModel().getSelectedItem();
         sheetType = chboxSheet.getSelectionModel().getSelectedItem();
 
-        if (companyType == null || companyType.equals("")) {
+        if (companyType == null || companyType.isEmpty()) {
             return new ErrorObject("Ontbrekende informatie", "Bedrijfstype mag niet leeg zijn.");
         }
-        if (sheetType == null || sheetType.equals("")) {
+        if (sheetType == null || sheetType.isEmpty()) {
             return new ErrorObject("Ontbrekende informatie", "Overzichtstype mag niet leeg zijn.");
         }
 

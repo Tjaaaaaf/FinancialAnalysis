@@ -5,7 +5,10 @@ import Models.Interfaces.IDocumentBuilder;
 import Services.AlertService;
 import Models.ErrorObject;
 import Services.DomainController;
+import StartUp.StartApplication;
 import Util.XmlUtil;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Alert.AlertType;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ListChangeListener;
@@ -27,16 +30,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
 public class DocumentManagementScreenController extends VBox {
 
     //region Properties
-    private final DomainController domeincontroller;
+    private final DomainController domainController;
     private final FileChooser fileChooser;
     private final StartScreenController startScreenController;
-    private final Comparator<IDocumentBuilder> builderSorter = (builder1, builder2) -> builder1.getNameProperty().get().compareToIgnoreCase(builder2.getNameProperty().get());
+    private final Comparator<IDocumentBuilder> builderSorter = (builder1, builder2) -> builder1.getName().compareToIgnoreCase(builder2.getName());
     private final XmlUtil xmlUtil = new XmlUtil();
     private SettingsScreenController next;
     //endregion
@@ -45,13 +49,13 @@ public class DocumentManagementScreenController extends VBox {
     @FXML
     private HBox hbButtonBox;
     @FXML
-    private Button btnKiesBestand;
+    private Button btnSelectFile;
     @FXML
     private Button btnAnalyse;
     @FXML
-    private VBox vbScherm;
+    private VBox vbScreen;
     @FXML
-    private TableView<IDocumentBuilder> tvBestandenLijst;
+    private TableView<IDocumentBuilder> tvFileList;
     @FXML
     private TableColumn<IDocumentBuilder, String> tcName;
     @FXML
@@ -61,7 +65,7 @@ public class DocumentManagementScreenController extends VBox {
     //endregion
 
     //region Constructor
-    public DocumentManagementScreenController(DomainController domeincontroller, StartScreenController startScreenController) {
+    public DocumentManagementScreenController(DomainController domainController, StartScreenController startScreenController) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/DocumentManagementScreen.fxml"));
         loader.setRoot(this);
         loader.setController(this);
@@ -71,7 +75,7 @@ public class DocumentManagementScreenController extends VBox {
             throw new RuntimeException(ex);
         }
 
-        this.domeincontroller = domeincontroller;
+        this.domainController = domainController;
         this.startScreenController = startScreenController;
         this.fileChooser = new FileChooser();
 
@@ -86,11 +90,11 @@ public class DocumentManagementScreenController extends VBox {
     private void buildGui() {
         Label label = new Label("Geen bestanden geselecteerd");
         label.setTextFill(Color.web("#d0dff2"));
-        tvBestandenLijst.setPlaceholder(label);
-        tcName.setCellValueFactory(celldata -> celldata.getValue().getNameProperty());
+        tvFileList.setPlaceholder(label);
+        tcName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
 
         tcSelect.setCellFactory(CheckBoxTableCell.forTableColumn(tcSelect));
-        tcSelect.setCellValueFactory(celldata -> celldata.getValue().getSelectedProperty());
+        tcSelect.setCellValueFactory(cellData -> new SimpleBooleanProperty(cellData.getValue().isSelected()));
 
         tcDelete.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
         tcDelete.setCellFactory(param -> fillDeleteButtonTableCells());
@@ -111,9 +115,9 @@ public class DocumentManagementScreenController extends VBox {
 
     @FXML
     private void makeAnalysis(ActionEvent event) {
-        if (!domeincontroller.getActiveDocumentBuilders().isEmpty()) {
+        if (!domainController.getActiveDocumentBuilders().isEmpty()) {
             if (next == null) {
-                next = new SettingsScreenController(domeincontroller, startScreenController, this);
+                next = new SettingsScreenController(domainController, startScreenController, this);
             }
             startScreenController.setCenter(next);
 
@@ -141,7 +145,7 @@ public class DocumentManagementScreenController extends VBox {
 
                 FileExtension fileExtension = name.substring(name.lastIndexOf(".")).equals(".xbrl") ? FileExtension.XBRL : FileExtension.CSV;
 
-                ErrorObject documentAdded = domeincontroller.addDocument(file, fileExtension);
+                ErrorObject documentAdded = domainController.addDocument(file, fileExtension);
                 if (documentAdded != null) {
                     return documentAdded;
                 }
@@ -161,7 +165,7 @@ public class DocumentManagementScreenController extends VBox {
 
     private void setDefaultOrigin() {
         String defaultOrigin = xmlUtil.getStringFromPreferences("defaultOrigin");
-        if (defaultOrigin == null || defaultOrigin.equals("") || !Files.exists(Paths.get(defaultOrigin)))
+        if (defaultOrigin == null || defaultOrigin.isEmpty() || !Files.exists(Paths.get(defaultOrigin)))
             fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         else
             fileChooser.setInitialDirectory(new File(defaultOrigin));
@@ -180,10 +184,10 @@ public class DocumentManagementScreenController extends VBox {
             private final Button btnDelete = new Button("x");
 
             @Override
-            protected void updateItem(IDocumentBuilder documentbuilder, boolean empty) {
-                super.updateItem(documentbuilder, empty);
+            protected void updateItem(IDocumentBuilder documentBuilder, boolean empty) {
+                super.updateItem(documentBuilder, empty);
 
-                if (documentbuilder == null) {
+                if (documentBuilder == null) {
                     setGraphic(null);
                     return;
                 }
@@ -195,7 +199,7 @@ public class DocumentManagementScreenController extends VBox {
                 setGraphic(btnDelete);
                 btnDelete.setOnAction(
                         event -> {
-                            domeincontroller.removeDocument(documentbuilder.getName());
+                            domainController.removeDocument(documentBuilder.getName());
                             fillTable();
                         }
                 );
@@ -206,22 +210,18 @@ public class DocumentManagementScreenController extends VBox {
     }
 
     private void fillTable() {
-        SortedList<IDocumentBuilder> sortedBuilders = new SortedList<IDocumentBuilder>(domeincontroller.getActiveDocumentBuilders(), builderSorter);
-        tvBestandenLijst.setItems(sortedBuilders);
+        SortedList<IDocumentBuilder> sortedBuilders = new SortedList<>(domainController.getActiveDocumentBuilders(), builderSorter);
+        tvFileList.setItems(sortedBuilders);
     }
 
     private void fixHeaders() {
-        tvBestandenLijst.getColumns().addListener(new ListChangeListener() {
-            @Override
-            public void onChanged(Change change) {
-                change.next();
-                if (change.wasReplaced()) {
-                    tvBestandenLijst.getColumns().clear();
-                    tvBestandenLijst.getColumns().addAll(tcName, tcSelect, tcDelete);
-                }
+        tvFileList.getColumns().addListener((ListChangeListener<TableColumn<IDocumentBuilder, ?>>) change -> {
+            change.next();
+            if (change.wasReplaced()) {
+                tvFileList.getColumns().clear();
+                tvFileList.getColumns().addAll(Arrays.asList(tcName, tcSelect, tcDelete));
             }
         });
     }
     //endregion
-
 }

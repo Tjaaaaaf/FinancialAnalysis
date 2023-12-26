@@ -1,11 +1,10 @@
 package ScreenControllers;
 
-import Services.DomainController;
-import Util.DocumentComparator;
+import Services.*;
+import StartUp.StartApplication;
+import Util.DocumentWrapperYearComparator;
 import Models.ErrorObject;
-import Services.AlertService;
 import Models.DocumentWrapper;
-import Services.ReportService;
 import Models.Enums.ReportStyle;
 import Util.XmlUtil;
 import javafx.event.ActionEvent;
@@ -44,7 +43,8 @@ public class MakeReportScreenController extends VBox {
     private final List<DocumentWrapper> documents;
     private final SettingsScreenController settingsScreenController;
     private File directoryFile;
-    private HSSFSheet report;
+    private HSSFSheet reportSheet;
+    private HSSFSheet ratiosSheet;
     private final XmlUtil xmlUtil = new XmlUtil();
     // endregion
 
@@ -116,12 +116,13 @@ public class MakeReportScreenController extends VBox {
     }
 
     @FXML
-    private void makeSheet(ActionEvent event) {
+    private void makeSheet() {
         ErrorObject error = checkInput();
         if (error != null)
             AlertService.showAlert(error.key, error.key, error.message, this.getScene().getWindow(), AlertType.ERROR);
         else {
-            report = workbook.createSheet(tfName.getText());
+            reportSheet = workbook.createSheet(tfName.getText());
+            ratiosSheet = workbook.createSheet("ratios");
             error = writeReport();
             if (error != null)
                 AlertService.showAlert(error.key, error.key, error.message, this.getScene().getWindow(),
@@ -166,7 +167,7 @@ public class MakeReportScreenController extends VBox {
     @FXML
     private void checkForEnter(KeyEvent event) {
         if (event.getCode() == KeyCode.ENTER) {
-            makeSheet(new ActionEvent());
+            makeSheet();
         }
     }
     // endregion
@@ -196,18 +197,16 @@ public class MakeReportScreenController extends VBox {
     }
 
     private void createReport() {
-
-        ReportService reportService = new ReportService(workbook, report, documents, style,
-                workbook.createDataFormat());
-
         if (!style.equals(ReportStyle.VERGELIJKINGNV) && !style.equals(ReportStyle.VERGELIJKINGBVBA)) {
-            reportService.createHistoriekReport();
+            (new HistoryReportService(workbook, reportSheet, ratiosSheet, documents, style,
+                    workbook.createDataFormat())).create();
         } else {
-            reportService.createVergelijkingReport();
+            (new CompareReportService(workbook, reportSheet, ratiosSheet, documents, style,
+                    workbook.createDataFormat())).create();
         }
 
         for (int i = 0; i < 2 * documents.size() + 7; i++) {
-            report.autoSizeColumn(i);
+            reportSheet.autoSizeColumn(i);
         }
     }
 
@@ -221,7 +220,7 @@ public class MakeReportScreenController extends VBox {
     }
 
     private void sortDocuments() {
-        documents.sort(new DocumentComparator());
+        documents.sort(new DocumentWrapperYearComparator());
     }
 
     private void compileVergelijking() {

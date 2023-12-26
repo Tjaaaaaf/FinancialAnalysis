@@ -114,7 +114,7 @@ public class DocumentWrapperRepository {
     }
 
     public List<IDocumentBuilder> getActiveDocumentBuilders() {
-        return documentMap.values().stream().filter(d -> d.getSelectedProperty().get()).collect(Collectors.toList());
+        return documentMap.values().stream().filter(IDocumentBuilder::isSelected).collect(Collectors.toList());
     }
 
     public ObservableList<String> getDocuments() {

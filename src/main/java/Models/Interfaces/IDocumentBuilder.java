@@ -2,8 +2,6 @@ package Models.Interfaces;
 
 import Models.Business;
 import Models.DocumentWrapper;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 
 public interface IDocumentBuilder {
 
@@ -13,9 +11,7 @@ public interface IDocumentBuilder {
 
     Business getBusiness();
 
-    SimpleStringProperty getNameProperty();
-
-    BooleanProperty getSelectedProperty();
+    boolean isSelected();
 
     DocumentWrapper build();
 
